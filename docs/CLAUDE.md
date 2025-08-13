@@ -182,7 +182,30 @@ DreamTalk is a **voice-first dream interpretation app** that eliminates the fric
 - Use MCP tools and specialized agents proactively for complex features
 - Test on physical devices for audio functionality
 - Run linting and type checking before commits
-- Include descriptive commit messages with business context
+- Follow Conventional Commits standard for all commit messages
+
+### Commit Message Standards
+Use Conventional Commits format: `type(scope): description`
+
+**Types:**
+- `feat`: New feature implementation
+- `fix`: Bug fixes and corrections
+- `ui`: UI/UX improvements and styling changes
+- `refactor`: Code refactoring without feature changes
+- `docs`: Documentation updates
+- `config`: Configuration and setup changes
+- `deps`: Dependency updates and package management
+- `test`: Test additions or modifications
+- `perf`: Performance improvements
+
+**Examples:**
+```bash
+feat(library): add dream symbol search and filtering
+fix(tabbar): resolve CTA button alignment issues
+ui(colors): update Soft Spring color palette
+refactor(components): extract reusable DreamCard component
+config(supabase): setup authentication and database schema
+```
 
 ## Development Notes
 - Always use `npx expo install` for Expo SDK packages to ensure compatibility
