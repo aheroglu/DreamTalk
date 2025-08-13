@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Tabs } from "expo-router";
-import { View, StyleSheet, Platform } from "react-native";
+import { View, StyleSheet, Platform, Animated } from "react-native";
 import { BookOpen, Mic, User } from "lucide-react-native";
 
 import Colors from "@/constants/Colors";
@@ -8,38 +8,92 @@ import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 
 // Custom tab bar icons using Lucide
-function TabBarIcon({ 
-  icon: Icon, 
-  color, 
-  focused, 
-  size = 24 
-}: { 
-  icon: any; 
-  color: string; 
+function TabBarIcon({
+  icon: Icon,
+  color,
+  focused,
+  size = 24,
+}: {
+  icon: any;
+  color: string;
   focused: boolean;
   size?: number;
 }) {
   return (
-    <View style={[styles.iconContainer, focused && styles.iconContainerFocused]}>
+    <View
+      style={[styles.iconContainer, focused && styles.iconContainerFocused]}
+    >
       <Icon size={size} color={color} />
     </View>
   );
 }
 
-// Special CTA tab for the center interpret button
-function CTATabIcon({ 
-  color, 
-  focused 
-}: { 
-  color: string; 
-  focused: boolean;
-}) {
+// Special CTA tab for the center interpret button with magical glow
+function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
   const colorScheme = useColorScheme();
-  const ctaColor = focused ? Colors[colorScheme ?? "light"].primary : color;
-  
+  const ctaColor = focused
+    ? Colors[colorScheme ?? "light"].primary
+    : Colors[colorScheme ?? "light"].primary;
+
+  // Animation for pulsing glow effect
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    pulseAnimation.start();
+
+    return () => pulseAnimation.stop();
+  }, [pulseAnim]);
+
   return (
-    <View style={[styles.ctaContainer, { backgroundColor: ctaColor }]}>
-      <Mic size={28} color="#FFFFFF" />
+    <View style={styles.ctaWrapper}>
+      {/* Animated Glow effect layers */}
+      <Animated.View 
+        style={[
+          styles.glowOuter, 
+          { 
+            backgroundColor: ctaColor,
+            transform: [{ scale: pulseAnim }]
+          }
+        ]} 
+      />
+      <Animated.View 
+        style={[
+          styles.glowMiddle, 
+          { 
+            backgroundColor: ctaColor,
+            transform: [{ scale: pulseAnim }]
+          }
+        ]} 
+      />
+      <Animated.View 
+        style={[
+          styles.glowInner, 
+          { 
+            backgroundColor: ctaColor,
+            transform: [{ scale: pulseAnim }]
+          }
+        ]} 
+      />
+
+      {/* Main CTA button */}
+      <View style={[styles.ctaContainer, { backgroundColor: ctaColor }]}>
+        <Mic size={32} color="#FFFFFF" strokeWidth={2.5} />
+      </View>
     </View>
   );
 }
@@ -52,17 +106,21 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tabIconDefault,
-        headerShown: useClientOnlyValue(false, true),
+        headerShown: false, // Remove all headers
         tabBarStyle: styles.tabBar,
         tabBarShowLabel: false,
-        tabBarHideOnKeyboard: Platform.OS === 'ios',
+        tabBarHideOnKeyboard: Platform.OS === "ios",
+        tabBarItemStyle: {
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
       }}
     >
       <Tabs.Screen
         name="library"
         options={{
           title: "Dream Library",
-          headerTitle: "Dream Library",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon icon={BookOpen} color={color} focused={focused} />
           ),
@@ -72,7 +130,6 @@ export default function TabLayout() {
         name="interpret"
         options={{
           title: "Interpret Dream",
-          headerTitle: "Interpret Your Dream",
           tabBarIcon: ({ color, focused }) => (
             <CTATabIcon color={color} focused={focused} />
           ),
@@ -82,7 +139,6 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          headerTitle: "Profile",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon icon={User} color={color} focused={focused} />
           ),
@@ -107,16 +163,20 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    bottom: 40,
+    left: 0,
+    right: 0,
+    marginHorizontal: 30,
     backgroundColor: Colors.softSpring.cream,
     borderRadius: 25,
     height: 70,
-    paddingBottom: 0,
-    paddingTop: 10,
-    shadowColor: '#000',
+    paddingTop: 15,
+    paddingHorizontal: 20,
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -125,11 +185,11 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: "rgba(0,0,0,0.05)",
   },
   iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -137,20 +197,43 @@ const styles = StyleSheet.create({
   iconContainerFocused: {
     backgroundColor: Colors.softSpring.lavender,
   },
+  ctaWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
   ctaContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginTop: -8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    borderWidth: 5,
+    borderColor: Colors.softSpring.cream, // Same as page background
+    zIndex: 10,
+  },
+  // Glow effect layers for magical appearance - adjusted for 92px button
+  glowOuter: {
+    position: "absolute",
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    opacity: 0.15,
+    zIndex: 1,
+  },
+  glowMiddle: {
+    position: "absolute",
+    width: 115,
+    height: 115,
+    borderRadius: 57.5,
+    opacity: 0.25,
+    zIndex: 2,
+  },
+  glowInner: {
+    position: "absolute",
+    width: 105,
+    height: 105,
+    borderRadius: 52.5,
+    opacity: 0.35,
+    zIndex: 3,
   },
 });
