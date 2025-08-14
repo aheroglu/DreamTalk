@@ -103,6 +103,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName="interpret"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tabIconDefault,
@@ -118,20 +119,20 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="interpret"
-        options={{
-          title: "Interpret Dream",
-          tabBarIcon: ({ color, focused }) => (
-            <CTATabIcon color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="library"
         options={{
           title: "Dream Library",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon icon={BookOpen} color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="interpret"
+        options={{
+          title: "Interpret Dream",
+          tabBarIcon: ({ color, focused }) => (
+            <CTATabIcon color={color} focused={focused} />
           ),
         }}
       />
@@ -142,12 +143,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon icon={User} color={color} focused={focused} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="index"
-        options={{
-          href: null, // Hide this redirect tab
         }}
       />
     </Tabs>
