@@ -35,30 +35,45 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
     ? Colors[colorScheme ?? "light"].primary
     : Colors[colorScheme ?? "light"].primary;
 
-  // Animation for pulsing glow effect
+  // Animation for pulsing glow effect - only when NOT focused
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const pulseAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
+    if (!focused) {
+      // Show glow animation when NOT on interpret page
+      const pulseAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.05,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+
+      pulseAnimation.start();
+      return () => pulseAnimation.stop();
+    } else {
+      // Stop animation and reset scale when on interpret page
+      pulseAnim.setValue(1);
+    }
+  }, [pulseAnim, focused]);
+
+  // If focused (on interpret page), render as normal tab
+  if (focused) {
+    return (
+      <View style={[styles.iconContainer, styles.iconContainerFocused]}>
+        <Mic size={24} color={color} />
+      </View>
     );
+  }
 
-    pulseAnimation.start();
-
-    return () => pulseAnimation.stop();
-  }, [pulseAnim]);
-
+  // If not focused (on other pages), show CTA with glow effects
   return (
     <View style={styles.ctaWrapper}>
       {/* Animated Glow effect layers */}
