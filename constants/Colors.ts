@@ -1,24 +1,24 @@
-// Soft Spring Design Palette for DreamTalk
-const softSpring = {
-  cream: '#FFFFE3',      // Primary background - soft cream
-  mint: '#E3FFF1',       // Accent green - mint highlight
-  lavender: '#E3E3FF',   // Secondary purple - lavender tabs
-  blush: '#FFE3F1',      // Button pink - active states
+// Under the Moonlight Design Palette for DreamTalk
+const underTheMoonlight = {
+  moonlight: '#CCCCFF',   // Lightest purple - soft moonlight glow
+  twilight: '#A3A3CC',    // Medium light purple - evening twilight
+  dusk: '#5C5C99',        // Medium dark purple - sunset dusk
+  midnight: '#292966',    // Darkest purple - deep midnight
 };
 
-const tintColorLight = softSpring.blush;
-const tintColorDark = softSpring.mint;
+const tintColorLight = underTheMoonlight.midnight;
+const tintColorDark = underTheMoonlight.twilight;
 
 export default {
   light: {
     text: '#333333',
-    background: softSpring.cream,
+    background: underTheMoonlight.moonlight,
     tint: tintColorLight,
     tabIconDefault: '#999999',
     tabIconSelected: tintColorLight,
-    card: softSpring.mint,
-    accent: softSpring.lavender,
-    primary: softSpring.blush,
+    card: underTheMoonlight.twilight,
+    accent: underTheMoonlight.dusk,
+    primary: underTheMoonlight.midnight,
   },
   dark: {
     text: '#FFFFFF',
@@ -27,10 +27,10 @@ export default {
     tabIconDefault: '#666666',
     tabIconSelected: tintColorDark,
     card: '#2A2A2A',
-    accent: softSpring.lavender,
-    primary: softSpring.mint,
+    accent: underTheMoonlight.dusk,
+    primary: underTheMoonlight.twilight,
   },
   
   // Export palette for direct use in components
-  softSpring,
+  underTheMoonlight,
 };

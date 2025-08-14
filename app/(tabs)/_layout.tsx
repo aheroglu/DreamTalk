@@ -42,7 +42,7 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
     const pulseAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.2,
+          toValue: 1.05,
           duration: 2000,
           useNativeDriver: true,
         }),
@@ -62,32 +62,32 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
   return (
     <View style={styles.ctaWrapper}>
       {/* Animated Glow effect layers */}
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.glowOuter, 
-          { 
+          styles.glowOuter,
+          {
             backgroundColor: ctaColor,
-            transform: [{ scale: pulseAnim }]
-          }
-        ]} 
+            transform: [{ scale: pulseAnim }],
+          },
+        ]}
       />
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.glowMiddle, 
-          { 
+          styles.glowMiddle,
+          {
             backgroundColor: ctaColor,
-            transform: [{ scale: pulseAnim }]
-          }
-        ]} 
+            transform: [{ scale: pulseAnim }],
+          },
+        ]}
       />
-      <Animated.View 
+      <Animated.View
         style={[
-          styles.glowInner, 
-          { 
+          styles.glowInner,
+          {
             backgroundColor: ctaColor,
-            transform: [{ scale: pulseAnim }]
-          }
-        ]} 
+            transform: [{ scale: pulseAnim }],
+          },
+        ]}
       />
 
       {/* Main CTA button */}
@@ -112,8 +112,8 @@ export default function TabLayout() {
         tabBarHideOnKeyboard: Platform.OS === "ios",
         tabBarItemStyle: {
           flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
+          alignItems: "center",
+          justifyContent: "center",
         },
       }}
     >
@@ -171,11 +171,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginHorizontal: 30,
-    backgroundColor: Colors.softSpring.cream,
+    backgroundColor: Colors.underTheMoonlight.moonlight,
     borderRadius: 25,
     height: 70,
     paddingTop: 15,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -190,12 +190,12 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: "center",
     justifyContent: "center",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   iconContainerFocused: {
-    backgroundColor: Colors.softSpring.lavender,
+    backgroundColor: Colors.underTheMoonlight.dusk,
   },
   ctaWrapper: {
     alignItems: "center",
@@ -204,34 +204,34 @@ const styles = StyleSheet.create({
   ctaContainer: {
     alignItems: "center",
     justifyContent: "center",
-    width: 86,
-    height: 86,
+    width: 78,
+    height: 78,
     borderRadius: 43,
-    borderWidth: 5,
-    borderColor: Colors.softSpring.cream, // Same as page background
+    borderWidth: 4,
+    borderColor: Colors.underTheMoonlight.moonlight, // Same as page background
     zIndex: 10,
   },
   // Glow effect layers for magical appearance - adjusted for 92px button
   glowOuter: {
     position: "absolute",
-    width: 130,
-    height: 130,
+    width: 120,
+    height: 120,
     borderRadius: 65,
     opacity: 0.15,
     zIndex: 1,
   },
   glowMiddle: {
     position: "absolute",
-    width: 115,
-    height: 115,
+    width: 105,
+    height: 105,
     borderRadius: 57.5,
     opacity: 0.25,
     zIndex: 2,
   },
   glowInner: {
     position: "absolute",
-    width: 105,
-    height: 105,
+    width: 95,
+    height: 95,
     borderRadius: 52.5,
     opacity: 0.35,
     zIndex: 3,

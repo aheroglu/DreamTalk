@@ -1,93 +1,108 @@
-import React, { useState } from 'react';
-import { 
-  StyleSheet, 
-  ScrollView, 
-  TextInput, 
-  TouchableOpacity, 
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
   FlatList,
-  SafeAreaView 
-} from 'react-native';
-import { Text, View } from '@/components/Themed';
-import { Search, Star, Moon, Heart } from 'lucide-react-native';
-import Colors from '@/constants/Colors';
+  SafeAreaView,
+} from "react-native";
+import { Text, View } from "@/components/Themed";
+import { Search, Star, Moon, Heart } from "lucide-react-native";
+import Colors from "@/constants/Colors";
 
 // Dummy dream symbols data
 const dreamSymbols = [
   {
-    id: '1',
-    symbol: '🌙',
-    title: 'Moon',
-    category: 'Nature',
-    meaning: 'Represents intuition, femininity, and the subconscious mind. A full moon suggests completion, while a new moon indicates new beginnings.',
-    popularity: 5
+    id: "1",
+    symbol: "🌙",
+    title: "Moon",
+    category: "Nature",
+    meaning:
+      "Represents intuition, femininity, and the subconscious mind. A full moon suggests completion, while a new moon indicates new beginnings.",
+    popularity: 5,
   },
   {
-    id: '2', 
-    symbol: '🌊',
-    title: 'Water',
-    category: 'Nature',
-    meaning: 'Symbolizes emotions, purification, and the flow of life. Clear water represents peace, while turbulent water suggests emotional turmoil.',
-    popularity: 5
+    id: "2",
+    symbol: "🌊",
+    title: "Water",
+    category: "Nature",
+    meaning:
+      "Symbolizes emotions, purification, and the flow of life. Clear water represents peace, while turbulent water suggests emotional turmoil.",
+    popularity: 5,
   },
   {
-    id: '3',
-    symbol: '🦋',
-    title: 'Butterfly',
-    category: 'Animals',
-    meaning: 'Represents transformation, rebirth, and personal growth. Often indicates a period of positive change in your life.',
-    popularity: 4
+    id: "3",
+    symbol: "🦋",
+    title: "Butterfly",
+    category: "Animals",
+    meaning:
+      "Represents transformation, rebirth, and personal growth. Often indicates a period of positive change in your life.",
+    popularity: 4,
   },
   {
-    id: '4',
-    symbol: '🏠',
-    title: 'House',
-    category: 'Objects',
-    meaning: 'Symbolizes the self, family, and security. Different rooms may represent different aspects of your personality.',
-    popularity: 4
+    id: "4",
+    symbol: "🏠",
+    title: "House",
+    category: "Objects",
+    meaning:
+      "Symbolizes the self, family, and security. Different rooms may represent different aspects of your personality.",
+    popularity: 4,
   },
   {
-    id: '5',
-    symbol: '🕊️',
-    title: 'Bird',
-    category: 'Animals',
-    meaning: 'Represents freedom, spirituality, and higher perspective. Flying birds suggest liberation from constraints.',
-    popularity: 4
+    id: "5",
+    symbol: "🕊️",
+    title: "Bird",
+    category: "Animals",
+    meaning:
+      "Represents freedom, spirituality, and higher perspective. Flying birds suggest liberation from constraints.",
+    popularity: 4,
   },
   {
-    id: '6',
-    symbol: '🌸',
-    title: 'Flowers',
-    category: 'Nature',
-    meaning: 'Symbolize beauty, growth, and fleeting moments. Different flowers have specific meanings related to love and emotions.',
-    popularity: 3
+    id: "6",
+    symbol: "🌸",
+    title: "Flowers",
+    category: "Nature",
+    meaning:
+      "Symbolize beauty, growth, and fleeting moments. Different flowers have specific meanings related to love and emotions.",
+    popularity: 3,
   },
 ];
 
-const categories = ['All', 'Nature', 'Animals', 'Objects'];
+const categories = ["All", "Nature", "Animals", "Objects"];
 
 export default function LibraryScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const filteredSymbols = dreamSymbols.filter(symbol => {
-    const matchesSearch = symbol.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         symbol.meaning.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || symbol.category === selectedCategory;
+  const filteredSymbols = dreamSymbols.filter((symbol) => {
+    const matchesSearch =
+      symbol.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      symbol.meaning.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" || symbol.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const renderDreamCard = ({ item }: { item: typeof dreamSymbols[0] }) => (
+  const renderDreamCard = ({ item }: { item: (typeof dreamSymbols)[0] }) => (
     <TouchableOpacity style={styles.dreamCard}>
-      <View style={styles.cardHeader}>
+      <View style={[styles.cardHeader, { backgroundColor: 'transparent' }]}>
         <Text style={styles.symbolEmoji}>{item.symbol}</Text>
-        <View style={styles.cardTitleContainer}>
+        <View style={[styles.cardTitleContainer, { backgroundColor: 'transparent' }]}>
           <Text style={styles.cardTitle}>{item.title}</Text>
           <Text style={styles.cardCategory}>{item.category}</Text>
         </View>
-        <View style={styles.popularityContainer}>
-          {[...Array(item.popularity)].map((_, i) => (
-            <Star key={i} size={14} color={Colors.softSpring.blush} fill={Colors.softSpring.blush} />
-          ))}
+        <View style={[styles.popularityContainer, { backgroundColor: 'transparent' }]}>
+          <View style={[styles.starsWrapper, { backgroundColor: 'transparent' }]}>
+            {[...Array(item.popularity)].map((_, i) => (
+              <Star
+                key={i}
+                size={12}
+                color={Colors.underTheMoonlight.dusk}
+                fill={Colors.underTheMoonlight.dusk}
+              />
+            ))}
+          </View>
         </View>
       </View>
       <Text style={styles.cardMeaning}>{item.meaning}</Text>
@@ -99,14 +114,16 @@ export default function LibraryScreen() {
       key={category}
       style={[
         styles.categoryChip,
-        selectedCategory === category && styles.categoryChipActive
+        selectedCategory === category && styles.categoryChipActive,
       ]}
       onPress={() => setSelectedCategory(category)}
     >
-      <Text style={[
-        styles.categoryText,
-        selectedCategory === category && styles.categoryTextActive
-      ]}>
+      <Text
+        style={[
+          styles.categoryText,
+          selectedCategory === category && styles.categoryTextActive,
+        ]}
+      >
         {category}
       </Text>
     </TouchableOpacity>
@@ -114,11 +131,14 @@ export default function LibraryScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerTitle}>
-            <Moon size={28} color={Colors.softSpring.lavender} />
+            <Moon size={28} color={Colors.underTheMoonlight.dusk} />
             <Text style={styles.title}>Dream Library</Text>
           </View>
           <Text style={styles.subtitle}>
@@ -139,8 +159,8 @@ export default function LibraryScreen() {
         </View>
 
         {/* Category Filter */}
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.categoriesContainer}
         >
@@ -152,7 +172,7 @@ export default function LibraryScreen() {
           <FlatList
             data={filteredSymbols}
             renderItem={renderDreamCard}
-            keyExtractor={item => item.id}
+            keyExtractor={(item) => item.id}
             scrollEnabled={false}
             ItemSeparatorComponent={() => <View style={styles.cardSeparator} />}
           />
@@ -165,7 +185,7 @@ export default function LibraryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.softSpring.cream,
+    backgroundColor: Colors.underTheMoonlight.moonlight,
   },
   scrollView: {
     flex: 1,
@@ -176,30 +196,30 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   headerTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#333',
+    fontWeight: "700",
+    color: "#333",
     marginLeft: 12,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginLeft: 40,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -211,51 +231,58 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   categoriesContainer: {
     marginBottom: 24,
   },
   categoryChip: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderColor: "rgba(0,0,0,0.08)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   categoryChipActive: {
-    backgroundColor: Colors.softSpring.lavender,
-    borderColor: Colors.softSpring.lavender,
+    backgroundColor: Colors.underTheMoonlight.dusk,
+    borderColor: Colors.underTheMoonlight.dusk,
   },
   categoryText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
+    fontWeight: "500",
+    color: "#666",
   },
   categoryTextActive: {
-    color: '#333',
+    color: "#333",
   },
   cardsContainer: {
     paddingBottom: 120, // Space for floating tabbar
   },
   dreamCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+    borderWidth: 0.5,
+    borderColor: "rgba(0,0,0,0.04)",
   },
   cardSeparator: {
     height: 16,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   symbolEmoji: {
@@ -267,22 +294,30 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 2,
   },
   cardCategory: {
     fontSize: 14,
-    color: '#999',
-    textTransform: 'uppercase',
+    color: "#999",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   popularityContainer: {
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  starsWrapper: {
+    flexDirection: "row",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 2,
   },
   cardMeaning: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#555',
+    color: "#555",
   },
 });
