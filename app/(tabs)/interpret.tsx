@@ -9,6 +9,7 @@ import {
   Vibration,
   Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Text, View } from '@/components/Themed';
 import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
 import {
@@ -36,6 +37,10 @@ export default function InterpretScreen() {
   const lockIndicatorOpacity = useRef(new Animated.Value(0)).current;
   const slideUpY = useRef(new Animated.Value(0)).current;
   
+  // Page transition animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  
   // Gesture handler ref
   const panGestureRef = useRef();
   
@@ -50,6 +55,32 @@ export default function InterpretScreen() {
       }
     };
   }, []);
+
+  // Page focus animation
+  useFocusEffect(
+    React.useCallback(() => {
+      // Animate in when page comes into focus
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 120,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Reset animations when page loses focus
+      return () => {
+        fadeAnim.setValue(0);
+        scaleAnim.setValue(0.95);
+      };
+    }, [fadeAnim, scaleAnim])
+  );
   
   const handleRecordStart = () => {
     setIsRecording(true);
@@ -310,16 +341,26 @@ export default function InterpretScreen() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
-        <View style={styles.topSection}>
-          {renderHeader()}
-          {renderTextInput()}
-        </View>
-        
-        <View style={styles.centerSection}>
-          {renderRecordButton()}
-        </View>
-        
-        <View style={styles.bottomSection} />
+        <Animated.View 
+          style={[
+            styles.animatedContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ scale: scaleAnim }],
+            }
+          ]}
+        >
+          <View style={styles.topSection}>
+            {renderHeader()}
+            {renderTextInput()}
+          </View>
+          
+          <View style={styles.centerSection}>
+            {renderRecordButton()}
+          </View>
+          
+          <View style={styles.bottomSection} />
+        </Animated.View>
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -329,6 +370,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.underTheMoonlight.moonlight,
+  },
+  animatedContainer: {
+    flex: 1,
   },
   topSection: {
     paddingHorizontal: 20,

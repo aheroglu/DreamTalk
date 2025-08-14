@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -6,7 +6,9 @@ import {
   SafeAreaView,
   Switch,
   Alert,
+  Animated,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Text, View } from '@/components/Themed';
 import {
   User,
@@ -46,6 +48,36 @@ const profileData = {
 export default function ProfileScreen() {
   const [settings, setSettings] = useState(profileData.settings);
   const [isAuthenticated, setIsAuthenticated] = useState(profileData.isAuthenticated);
+
+  // Page transition animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  // Page focus animation
+  useFocusEffect(
+    React.useCallback(() => {
+      // Animate in when page comes into focus
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 120,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Reset animations when page loses focus
+      return () => {
+        fadeAnim.setValue(0);
+        scaleAnim.setValue(0.95);
+      };
+    }, [fadeAnim, scaleAnim])
+  );
 
   const handleSignIn = () => {
     Alert.alert(
@@ -192,7 +224,16 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <Animated.View 
+        style={[
+          styles.animatedContainer,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          }
+        ]}
+      >
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <View style={[styles.headerTitle, { backgroundColor: 'transparent' }]}>
@@ -225,7 +266,8 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.bottomSpacer} />
-      </ScrollView>
+        </ScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -234,6 +276,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.underTheMoonlight.moonlight,
+  },
+  animatedContainer: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,
