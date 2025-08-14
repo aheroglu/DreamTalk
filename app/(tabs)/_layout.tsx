@@ -144,6 +144,12 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="index"
+        options={{
+          href: null, // Hide this redirect tab
+        }}
+      />
     </Tabs>
   );
 }
