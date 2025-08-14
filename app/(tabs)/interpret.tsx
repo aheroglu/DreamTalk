@@ -310,16 +310,16 @@ export default function InterpretScreen() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.topSection}>
           {renderHeader()}
           {renderTextInput()}
-        </ScrollView>
+        </View>
         
-        {renderRecordButton()}
+        <View style={styles.centerSection}>
+          {renderRecordButton()}
+        </View>
+        
+        <View style={styles.bottomSection} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -330,17 +330,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.underTheMoonlight.moonlight,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
+  topSection: {
     paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 200, // Space for record button
+    paddingTop: 20,
+  },
+  centerSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  bottomSection: {
+    height: 100, // Space for tabbar
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   headerContent: {
     alignItems: 'center',
@@ -359,7 +364,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   textInputSection: {
-    marginBottom: 32,
+    marginBottom: 16,
   },
   toggleButton: {
     flexDirection: 'row',
@@ -411,12 +416,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#CCC',
   },
   recordSection: {
-    position: 'absolute',
-    bottom: 40,
-    left: 0,
-    right: 0,
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
   recordLabel: {
     fontSize: 16,
