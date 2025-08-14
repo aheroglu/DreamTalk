@@ -118,20 +118,20 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="library"
-        options={{
-          title: "Dream Library",
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon icon={BookOpen} color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="interpret"
         options={{
           title: "Interpret Dream",
           tabBarIcon: ({ color, focused }) => (
             <CTATabIcon color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="library"
+        options={{
+          title: "Dream Library",
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon icon={BookOpen} color={color} focused={focused} />
           ),
         }}
       />
@@ -142,19 +142,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon icon={User} color={color} focused={focused} />
           ),
-        }}
-      />
-      {/* Hide old tab screens */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          href: null, // This hides the tab
-        }}
-      />
-      <Tabs.Screen
-        name="two"
-        options={{
-          href: null, // This hides the tab
         }}
       />
     </Tabs>
