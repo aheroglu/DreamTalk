@@ -2,28 +2,9 @@ import React, { useEffect, useRef } from "react";
 import { Tabs } from "expo-router";
 import { View, StyleSheet, Platform, Animated } from "react-native";
 import { BookOpen, Mic, User } from "lucide-react-native";
-import { withTiming, withSpring, Easing } from 'react-native-reanimated';
-
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
-
-// Custom transition configurations for smooth animations
-const customTransitionConfig = {
-  animation: 'timing',
-  config: {
-    duration: 300,
-    easing: Easing.bezier(0.4, 0, 0.2, 1), // Material Design easing
-  },
-};
-
-const fadeTransitionConfig = {
-  animation: 'timing',
-  config: {
-    duration: 250,
-    easing: Easing.inOut(Easing.ease),
-  },
-};
 
 // Custom tab bar icons using Lucide
 function TabBarIcon({
@@ -150,15 +131,8 @@ export default function TabLayout() {
           justifyContent: "center",
         },
         // Add smooth transition animations
-        animation: 'shift',
-        animationDuration: 300,
         gestureEnabled: true,
         lazy: true,
-        // Custom transition spec for smoother animations
-        transitionSpec: {
-          open: customTransitionConfig,
-          close: customTransitionConfig,
-        },
       }}
     >
       <Tabs.Screen
