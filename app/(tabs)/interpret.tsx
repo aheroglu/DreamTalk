@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Vibration,
   Alert,
+  Dimensions,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Text, View } from '@/components/Themed';
@@ -21,8 +23,14 @@ import {
   Type,
   Send,
   Loader,
+  Stars,
+  Moon,
 } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function InterpretScreen() {
   const [isRecording, setIsRecording] = useState(false);
@@ -41,6 +49,14 @@ export default function InterpretScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   
+  // Modern UI animations
+  const pulseAnimation = useRef(new Animated.Value(1)).current;
+  const glowAnimation = useRef(new Animated.Value(0)).current;
+  const particleAnimation = useRef(new Animated.Value(0)).current;
+  const waveAnimation = useRef(new Animated.Value(0)).current;
+  const heroContentScale = useRef(new Animated.Value(0.9)).current;
+  const heroBg = useRef(new Animated.Value(0)).current;
+  
   // Gesture handler ref
   const panGestureRef = useRef();
   
@@ -56,51 +72,129 @@ export default function InterpretScreen() {
     };
   }, []);
 
-  // Page focus animation
+  // Enhanced page focus animation with modern effects
   useFocusEffect(
     React.useCallback(() => {
       // Animate in when page comes into focus
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 300,
+          duration: 600,
           useNativeDriver: true,
         }),
         Animated.spring(scaleAnim, {
           toValue: 1,
-          tension: 120,
+          tension: 100,
           friction: 8,
           useNativeDriver: true,
         }),
+        Animated.spring(heroContentScale, {
+          toValue: 1,
+          tension: 80,
+          friction: 10,
+          useNativeDriver: true,
+          delay: 200,
+        }),
+        Animated.timing(heroBg, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
       ]).start();
+      
+      // Start ambient animations
+      startAmbientAnimations();
 
       // Reset animations when page loses focus
       return () => {
         fadeAnim.setValue(0);
         scaleAnim.setValue(0.95);
+        heroContentScale.setValue(0.9);
+        heroBg.setValue(0);
       };
-    }, [fadeAnim, scaleAnim])
+    }, [fadeAnim, scaleAnim, heroContentScale, heroBg])
   );
+  
+  // Ambient animations for mystical atmosphere
+  const startAmbientAnimations = () => {
+    // Particle floating animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(particleAnimation, {
+          toValue: 1,
+          duration: 4000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(particleAnimation, {
+          toValue: 0,
+          duration: 4000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+    
+    // Gentle wave animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(waveAnimation, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(waveAnimation, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  };
   
   const handleRecordStart = () => {
     setIsRecording(true);
     setRecordingTime(0);
     
-    // Button press animation
-    Animated.spring(recordButtonScale, {
-      toValue: 1.2,
-      useNativeDriver: true,
-    }).start();
+    // Enhanced button press animation
+    Animated.parallel([
+      Animated.spring(recordButtonScale, {
+        toValue: 1.15,
+        tension: 150,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.timing(glowAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
     
-    // Show lock indicator
-    Animated.timing(lockIndicatorOpacity, {
+    // Show lock indicator with bounce
+    Animated.spring(lockIndicatorOpacity, {
       toValue: 1,
-      duration: 300,
+      tension: 120,
+      friction: 8,
       useNativeDriver: true,
     }).start();
     
-    // Haptic feedback
-    Vibration.vibrate(50);
+    // Start pulsing animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnimation, {
+          toValue: 1.1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnimation, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+    
+    // Enhanced haptic feedback
+    Vibration.vibrate([0, 100, 50, 100]);
     
     // Start recording timer
     timerRef.current = setInterval(() => {
@@ -120,15 +214,30 @@ export default function InterpretScreen() {
         timerRef.current = null;
       }
       
-      // Reset animations
-      Animated.spring(recordButtonScale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }).start();
+      // Enhanced reset animations
+      Animated.parallel([
+        Animated.spring(recordButtonScale, {
+          toValue: 1,
+          tension: 150,
+          friction: 10,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnimation, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnimation, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
       
-      Animated.timing(lockIndicatorOpacity, {
+      Animated.spring(lockIndicatorOpacity, {
         toValue: 0,
-        duration: 200,
+        tension: 100,
+        friction: 8,
         useNativeDriver: true,
       }).start();
       
@@ -138,13 +247,29 @@ export default function InterpretScreen() {
 
   const handleSlideUpToLock = () => {
     setIsLocked(true);
-    Vibration.vibrate(100);
+    Vibration.vibrate([0, 200, 100, 200]);
     
-    // Reset button scale but keep recording
-    Animated.spring(recordButtonScale, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
+    // Enhanced lock animation
+    Animated.parallel([
+      Animated.spring(recordButtonScale, {
+        toValue: 1,
+        tension: 120,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+      Animated.sequence([
+        Animated.timing(glowAnimation, {
+          toValue: 1.5,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
     
     console.log('Recording locked...');
   };
@@ -528,43 +653,61 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   recordingStatus: {
+    marginTop: 32,
+    shadowColor: Colors.underTheMoonlight.midnight,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.underTheMoonlight.midnight,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+      },
+    }),
+  },
+  recordingStatusBlur: {
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  recordingStatusGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   recordingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FF4444',
-    marginRight: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FF5252',
+    marginRight: 12,
+    shadowColor: '#FF5252',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
   },
   recordingTime: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.underTheMoonlight.midnight,
+    letterSpacing: -0.3,
   },
   lockedIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 16,
-    paddingLeft: 16,
-    borderLeftWidth: 1,
-    borderLeftColor: '#E0E0E0',
+    marginLeft: 20,
+    paddingLeft: 20,
+    borderLeftWidth: 1.5,
+    borderLeftColor: Colors.underTheMoonlight.twilight,
   },
   lockedText: {
     fontSize: 14,
-    color: Colors.underTheMoonlight.dusk,
-    marginLeft: 4,
-    fontWeight: '500',
+    color: Colors.underTheMoonlight.midnight,
+    marginLeft: 8,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
 });
