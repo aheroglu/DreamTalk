@@ -209,57 +209,31 @@ export default function TabLayout() {
     return index !== -1 ? index : 1; // Default to interpret (index 1)
   };
 
+  // STEP 1: Disable Expo Tabs and create skeleton
   return (
     <View style={{ flex: 1 }}>
-      <Tabs
-        initialRouteName="interpret"
-        screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
-          tabBarInactiveTintColor:
-            Colors[colorScheme ?? "light"].tabIconDefault,
-          headerShown: false, // Remove all headers
-          tabBarStyle: styles.tabBar,
-          tabBarShowLabel: false,
-          tabBarHideOnKeyboard: Platform.OS === "ios",
-          tabBarItemStyle: {
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            height: STYLES.tabBar.height, // Sabit yükseklik
-          },
-          lazy: true,
-          tabBarButton: HapticTab,
-        }}
-      >
-        <Tabs.Screen
-          name="library"
-          options={{
-            title: "Dream Library",
-            tabBarIcon: ({ color, focused }) => (
-              <TabBarIcon icon={BookOpen} color={color} focused={focused} />
-            ),
+      {/* Screen content area */}
+      <View style={{ flex: 1 }}>
+        <Tabs
+          initialRouteName="interpret"
+          screenOptions={{
+            headerShown: false,
+            tabBarStyle: { display: 'none' }, // Hide default tabbar
           }}
-        />
-        <Tabs.Screen
-          name="interpret"
-          options={{
-            title: "Interpret Dream",
-            tabBarIcon: ({ color, focused }) => (
-              <CTATabIcon color={color} focused={focused} />
-            ),
-            tabBarButton: EnhancedHapticTab,
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Profile",
-            tabBarIcon: ({ color, focused }) => (
-              <TabBarIcon icon={User} color={color} focused={focused} />
-            ),
-          }}
-        />
-      </Tabs>
+        >
+          <Tabs.Screen name="library" />
+          <Tabs.Screen name="interpret" />
+          <Tabs.Screen name="profile" />
+        </Tabs>
+      </View>
+
+      {/* STEP 1: Custom Tabbar Skeleton - Pure Flexbox Container */}
+      <View style={styles.customTabbarContainer}>
+        <Text style={styles.skeletonText}>
+          📱 Custom Tabbar Skeleton - Step 1{'\n'}
+          Pure Flexbox Container Ready
+        </Text>
+      </View>
     </View>
   );
 }
@@ -335,5 +309,37 @@ const styles = StyleSheet.create({
     borderRadius: STYLES.glow.inner / 2,
     opacity: 0.35,
     zIndex: 3,
+  },
+  
+  // STEP 1: Custom Tabbar Skeleton Styles
+  customTabbarContainer: {
+    // Pure CSS flexbox approach - exactly like web
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: STYLES.tabBar.bottom,
+    left: 0,
+    right: 0,
+    marginHorizontal: STYLES.tabBar.marginHorizontal,
+    backgroundColor: Colors.underTheMoonlight.moonlight,
+    borderRadius: STYLES.tabBar.borderRadius,
+    height: STYLES.tabBar.height,
+    paddingHorizontal: STYLES.tabBar.paddingHorizontal,
+    // Same shadows as before
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.05)",
+  },
+  skeletonText: {
+    color: Colors.underTheMoonlight.midnight,
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

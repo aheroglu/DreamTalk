@@ -559,7 +559,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginTop: -40, // Pull record button closer to text area
   },
   bottomSection: {
     height: 100, // Space for tabbar
@@ -585,7 +584,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   textInputSection: {
-    marginBottom: 8, // Reduce space after text input
+    marginBottom: 16,
   },
   toggleButton: {
     flexDirection: "row",
@@ -641,7 +640,7 @@ const styles = StyleSheet.create({
   recordLabel: {
     fontSize: 16,
     color: "#666",
-    marginBottom: 20, // More space for better visual hierarchy
+    marginBottom: 5,
     textAlign: "center",
   },
   lockIndicator: {
