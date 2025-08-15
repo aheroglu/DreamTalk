@@ -9,6 +9,7 @@ import {
   Animated,
   Platform,
   Vibration,
+  Dimensions,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
