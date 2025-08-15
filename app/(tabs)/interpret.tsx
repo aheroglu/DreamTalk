@@ -46,34 +46,12 @@ const getResponsiveValue = (base: number, factor: number = 1) => {
   return Math.round(base * scale * factor);
 };
 
-// More sophisticated responsive system for record button
-const getRecordButtonResponsiveValues = () => {
-  const isSmallDevice = screenWidth <= 375; // iPhone SE, iPhone 12 mini
-  const isLargeDevice = screenWidth >= 428; // iPhone 14 Pro Max, iPhone 15 Plus
-  
-  // Base values optimized for iPhone 11/12/13
-  let baseSize = 140;
-  let baseIconSize = 48;
-  
-  // Adjust for smaller devices
-  if (isSmallDevice) {
-    baseSize = 120;
-    baseIconSize = 42;
-  }
-  // Adjust for larger devices
-  else if (isLargeDevice) {
-    baseSize = 155;
-    baseIconSize = 52;
-  }
-  
-  return {
-    size: baseSize,
-    borderRadius: Math.round(baseSize / 2),
-    iconSize: baseIconSize,
-  };
+// Web'deki gibi basit - sabit değerler
+const responsiveRecordButton = {
+  size: 140,
+  borderRadius: 70,
+  iconSize: 48,
 };
-
-const responsiveRecordButton = getRecordButtonResponsiveValues();
 
 export default function InterpretScreen() {
   const router = useRouter();

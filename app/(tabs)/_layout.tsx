@@ -28,66 +28,22 @@ const getResponsiveValue = (base: number, factor: number = 1) => {
   return Math.round(base * scale * factor);
 };
 
-// More sophisticated responsive system considering different iPhone models
-const getTabbarResponsiveValues = () => {
-  // Define breakpoints for different iPhone models
-  const isSmallDevice = screenWidth <= 375; // iPhone SE, iPhone 12 mini
-  const isLargeDevice = screenWidth >= 428; // iPhone 14 Pro Max, iPhone 15 Plus
-  
-  // Base values optimized for iPhone 11/12/13 (390-414px width)
-  let baseTabBarHeight = 70;
-  let baseBottom = 40;
-  let baseMarginHorizontal = 30;
-  let baseBorderRadius = 25;
-  let baseIconContainer = 50;
-  let baseIconSize = 24;
-  let baseCTASize = 78;
-  
-  // Adjust for smaller devices
-  if (isSmallDevice) {
-    baseTabBarHeight = 65;
-    baseBottom = 35;
-    baseMarginHorizontal = 25;
-    baseBorderRadius = 22;
-    baseIconContainer = 46;
-    baseIconSize = 22;
-    baseCTASize = 72;
-  }
-  // Adjust for larger devices
-  else if (isLargeDevice) {
-    baseTabBarHeight = 75;
-    baseBottom = 45;
-    baseMarginHorizontal = 35;
-    baseBorderRadius = 28;
-    baseIconContainer = 54;
-    baseIconSize = 26;
-    baseCTASize = 84;
-  }
-  
-  return {
-    // Tabbar dimensions
-    tabBarHeight: baseTabBarHeight,
-    tabBarBottom: baseBottom,
-    tabBarMarginHorizontal: baseMarginHorizontal,
-    tabBarBorderRadius: baseBorderRadius,
-    
-    // Tab icon container
-    iconContainerSize: baseIconContainer,
-    iconSize: baseIconSize,
-    
-    // CTA button
-    ctaContainerSize: baseCTASize,
-    ctaBorderRadius: Math.round(baseCTASize / 2),
-    ctaBorderWidth: isSmallDevice ? 3 : 4,
-    
-    // Glow effects
-    glowOuterSize: baseCTASize + 42,
-    glowMiddleSize: baseCTASize + 27,
-    glowInnerSize: baseCTASize + 17,
-  };
+// Web'deki gibi basit responsive sistem - sadece temel değerler
+const responsiveStyles = {
+  // Tüm cihazlar için sabit değerler (web'deki rem gibi)
+  tabBarHeight: 70,
+  tabBarBottom: 40,
+  tabBarMarginHorizontal: 30,
+  tabBarBorderRadius: 25,
+  iconContainerSize: 50,
+  iconSize: 24,
+  ctaContainerSize: 78,
+  ctaBorderRadius: 39,
+  ctaBorderWidth: 4,
+  glowOuterSize: 120,
+  glowMiddleSize: 105,
+  glowInnerSize: 95,
 };
-
-const responsiveStyles = getTabbarResponsiveValues();
 
 // HapticTab component for native haptic feedback
 const HapticTab = ({ children, onPress, ...props }: any) => (
@@ -269,20 +225,10 @@ export default function TabLayout() {
           tabBarShowLabel: false,
           tabBarHideOnKeyboard: Platform.OS === "ios",
           tabBarItemStyle: {
+            // Web'deki gibi basit - flex: 1 yeterli
             flex: 1,
             alignItems: "center",
             justifyContent: "center",
-            height: "100%",
-            width: "33.333%", // Force equal distribution
-            minWidth: "33.333%",
-            maxWidth: "33.333%",
-          },
-          tabBarContentContainerStyle: {
-            flex: 1,
-            flexDirection: "row",
-            justifyContent: "space-around",
-            alignItems: "center",
-            width: "100%",
           },
           lazy: true,
           tabBarButton: HapticTab,
@@ -323,9 +269,10 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
+    // Web'deki gibi basit flexbox - bu kadar!
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around", // Eşit dağıtım
     alignItems: "center",
     position: "absolute",
     bottom: responsiveStyles.tabBarBottom,
@@ -335,9 +282,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.underTheMoonlight.moonlight,
     borderRadius: responsiveStyles.tabBarBorderRadius,
     height: responsiveStyles.tabBarHeight,
-    paddingTop: getResponsiveValue(15),
-    paddingHorizontal: 0, // Remove horizontal padding to allow full width distribution
-    paddingBottom: getResponsiveValue(5),
+    paddingHorizontal: 20, // Web'deki gibi sabit padding
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

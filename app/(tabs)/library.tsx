@@ -34,19 +34,8 @@ const getResponsiveValue = (base: number, factor: number = 1) => {
   return Math.round(base * scale * factor);
 };
 
-// Calculate bottom spacer based on tabbar size
-const getBottomSpacerHeight = () => {
-  const isSmallDevice = screenWidth <= 375;
-  const isLargeDevice = screenWidth >= 428;
-  
-  if (isSmallDevice) {
-    return 110; // 65 (tabbar) + 35 (bottom) + 10 (extra)
-  } else if (isLargeDevice) {
-    return 130; // 75 (tabbar) + 45 (bottom) + 10 (extra)
-  } else {
-    return 120; // 70 (tabbar) + 40 (bottom) + 10 (extra)
-  }
-};
+// Web'deki gibi basit - sabit bottom spacer
+const BOTTOM_SPACER_HEIGHT = 120;
 
 // Dummy dream symbols data
 const dreamSymbols = [
