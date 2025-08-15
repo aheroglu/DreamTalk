@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Tabs } from "expo-router";
-import { View, StyleSheet, Platform, Animated } from "react-native";
+import { View, StyleSheet, Platform, Animated, Vibration, TouchableOpacity } from "react-native";
 import { BookOpen, Mic, User } from "lucide-react-native";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
@@ -12,12 +12,24 @@ function TabBarIcon({
   color,
   focused,
   size = 24,
+  onPress,
 }: {
   icon: any;
   color: string;
   focused: boolean;
   size?: number;
+  onPress?: () => void;
 }) {
+  const handlePress = () => {
+    // Haptic feedback on tab press
+    if (Platform.OS === 'ios') {
+      Vibration.vibrate(50);
+    } else {
+      Vibration.vibrate(30);
+    }
+    if (onPress) onPress();
+  };
+
   return (
     <View
       style={[styles.iconContainer, focused && styles.iconContainerFocused]}
@@ -36,6 +48,15 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
 
   // Animation for pulsing glow effect - only when NOT focused
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePress = () => {
+    // Enhanced haptic feedback for CTA button
+    if (Platform.OS === 'ios') {
+      Vibration.vibrate([0, 100, 50, 100]); // Custom pattern for CTA
+    } else {
+      Vibration.vibrate(80);
+    }
+  };
 
   useEffect(() => {
     if (!focused) {
@@ -115,6 +136,29 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
+  // Custom tab button with haptic feedback
+  const CustomTabButton = ({ children, onPress, ...props }: any) => (
+    <TouchableOpacity
+      {...props}
+      onPress={(e) => {
+        // Haptic feedback on tab press
+        if (Platform.OS === 'ios') {
+          Vibration.vibrate(50);
+        } else {
+          Vibration.vibrate(30);
+        }
+        onPress && onPress(e);
+      }}
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+
   return (
     <Tabs
       initialRouteName="interpret"
@@ -130,9 +174,11 @@ export default function TabLayout() {
           alignItems: "center",
           justifyContent: "center",
         },
-        // Add smooth transition animations
+        // Add smooth transition animations and swipe gestures
         gestureEnabled: true,
+        swipeEnabled: true,
         lazy: true,
+        tabBarButton: CustomTabButton,
       }}
     >
       <Tabs.Screen
@@ -150,6 +196,27 @@ export default function TabLayout() {
           title: "Interpret Dream",
           tabBarIcon: ({ color, focused }) => (
             <CTATabIcon color={color} focused={focused} />
+          ),
+          tabBarButton: ({ children, onPress, ...props }) => (
+            <TouchableOpacity
+              {...props}
+              onPress={(e) => {
+                // Enhanced haptic feedback for CTA button
+                if (Platform.OS === 'ios') {
+                  Vibration.vibrate([0, 100, 50, 100]); // Custom pattern for CTA
+                } else {
+                  Vibration.vibrate(80);
+                }
+                onPress && onPress(e);
+              }}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {children}
+            </TouchableOpacity>
           ),
         }}
       />
