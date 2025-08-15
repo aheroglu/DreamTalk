@@ -199,14 +199,30 @@ export default function TabLayout() {
   const router = useRouter();
   const segments = useSegments();
 
-  // Tab navigation array for swipe gestures
+  // Tab navigation array
   const tabs = ["library", "interpret", "profile"];
 
-  // Get current tab index
-  const getCurrentTabIndex = () => {
+  // Get current active tab
+  const getCurrentTab = () => {
     const currentTab = segments[1]; // Get the tab name from segments
-    const index = tabs.indexOf(currentTab || "interpret");
-    return index !== -1 ? index : 1; // Default to interpret (index 1)
+    return currentTab || "interpret"; // Default to interpret
+  };
+
+  // STEP 3: Navigation handlers with haptic feedback
+  const handleTabPress = (tabName: string) => {
+    // Haptic feedback
+    if (Platform.OS === 'ios') {
+      if (tabName === 'interpret') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // CTA feedback
+      } else {
+        Haptics.selectionAsync(); // Normal tab feedback
+      }
+    } else {
+      Vibration.vibrate(tabName === 'interpret' ? 50 : 20);
+    }
+
+    // Navigate to tab
+    router.push(`/(tabs)/${tabName}`);
   };
 
   // STEP 1: Disable Expo Tabs and create skeleton
@@ -227,26 +243,66 @@ export default function TabLayout() {
         </Tabs>
       </View>
 
-      {/* STEP 2: Custom Tabbar with 3 Tab Buttons - Perfect Grid */}
+      {/* STEP 3: Interactive Tabbar with Touch Handlers & Active States */}
       <View style={styles.customTabbarContainer}>
         
         {/* Tab 1: Library - 33.33% width */}
-        <View style={styles.tabButton}>
-          <BookOpen size={STYLES.icon.size} color={Colors.underTheMoonlight.dusk} />
-          <Text style={styles.tabDebugText}>LIB</Text>
-        </View>
+        <TouchableOpacity 
+          style={[
+            styles.tabButton,
+            getCurrentTab() === 'library' && styles.tabButtonActive
+          ]}
+          onPress={() => handleTabPress('library')}
+          activeOpacity={0.7}
+        >
+          <BookOpen 
+            size={STYLES.icon.size} 
+            color={getCurrentTab() === 'library' ? Colors.underTheMoonlight.midnight : Colors.underTheMoonlight.dusk} 
+          />
+          <Text style={[
+            styles.tabDebugText,
+            getCurrentTab() === 'library' && styles.tabDebugTextActive
+          ]}>LIB</Text>
+        </TouchableOpacity>
         
         {/* Tab 2: Interpret (CTA) - 33.33% width */}
-        <View style={styles.tabButton}>
-          <Mic size={STYLES.cta.iconSize} color={Colors.underTheMoonlight.midnight} />
-          <Text style={styles.tabDebugText}>INT</Text>
-        </View>
+        <TouchableOpacity 
+          style={[
+            styles.tabButton,
+            styles.tabButtonCTA,
+            getCurrentTab() === 'interpret' && styles.tabButtonActive
+          ]}
+          onPress={() => handleTabPress('interpret')}
+          activeOpacity={0.8}
+        >
+          <Mic 
+            size={STYLES.cta.iconSize} 
+            color={Colors.underTheMoonlight.midnight} 
+          />
+          <Text style={[
+            styles.tabDebugText,
+            styles.tabDebugTextCTA
+          ]}>INT</Text>
+        </TouchableOpacity>
         
         {/* Tab 3: Profile - 33.33% width */}
-        <View style={styles.tabButton}>
-          <User size={STYLES.icon.size} color={Colors.underTheMoonlight.dusk} />
-          <Text style={styles.tabDebugText}>PRO</Text>
-        </View>
+        <TouchableOpacity 
+          style={[
+            styles.tabButton,
+            getCurrentTab() === 'profile' && styles.tabButtonActive
+          ]}
+          onPress={() => handleTabPress('profile')}
+          activeOpacity={0.7}
+        >
+          <User 
+            size={STYLES.icon.size} 
+            color={getCurrentTab() === 'profile' ? Colors.underTheMoonlight.midnight : Colors.underTheMoonlight.dusk} 
+          />
+          <Text style={[
+            styles.tabDebugText,
+            getCurrentTab() === 'profile' && styles.tabDebugTextActive
+          ]}>PRO</Text>
+        </TouchableOpacity>
         
       </View>
     </View>
@@ -352,23 +408,39 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.05)",
   },
   
-  // STEP 2: Tab Button Styles - Perfect 33.33% Distribution
+  // STEP 3: Interactive Tab Button Styles with Active States
   tabButton: {
     // Each tab gets exactly 1/3 of the space
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     height: "100%",
-    // Debug: Add subtle background to see distribution
-    backgroundColor: "rgba(255,255,255,0.1)",
+    // Subtle background for visual feedback
+    backgroundColor: "rgba(255,255,255,0.05)",
     marginHorizontal: 2,
     borderRadius: 8,
   },
+  tabButtonActive: {
+    // Active state styling
+    backgroundColor: Colors.underTheMoonlight.dusk,
+  },
+  tabButtonCTA: {
+    // Special styling for CTA button (interpret)
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
   tabDebugText: {
-    color: Colors.underTheMoonlight.midnight,
+    color: Colors.underTheMoonlight.dusk,
     fontSize: 10,
     fontWeight: "600",
     marginTop: 2,
+  },
+  tabDebugTextActive: {
+    color: Colors.underTheMoonlight.moonlight, // Light text on dark background
+    fontWeight: "700",
+  },
+  tabDebugTextCTA: {
+    color: Colors.underTheMoonlight.midnight,
+    fontWeight: "700",
   },
   
   skeletonText: {
