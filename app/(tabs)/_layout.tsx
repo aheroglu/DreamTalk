@@ -208,6 +208,33 @@ export default function TabLayout() {
     return currentTab || "interpret"; // Default to interpret
   };
 
+  // Glow animation for CTA button
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const currentTab = getCurrentTab();
+    if (currentTab !== 'interpret') {
+      // Show glow animation when NOT on interpret page
+      const pulseAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.05,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulseAnimation.start();
+      
+      return () => pulseAnimation.stop();
+    }
+  }, [getCurrentTab(), pulseAnim]);
+
   // STEP 3: Navigation handlers with haptic feedback
   const handleTabPress = (tabName: string) => {
     // Haptic feedback
@@ -261,7 +288,7 @@ export default function TabLayout() {
           />
         </TouchableOpacity>
         
-        {/* Tab 2: Interpret (CTA) */}
+        {/* Tab 2: Interpret (CTA) with Magical Glow Effects */}
         <TouchableOpacity 
           style={[
             styles.tabButton,
@@ -271,14 +298,40 @@ export default function TabLayout() {
           onPress={() => handleTabPress('interpret')}
           activeOpacity={0.8}
         >
-          <View style={[
-            styles.ctaIconContainer,
-            getCurrentTab() === 'interpret' && styles.ctaIconContainerActive
-          ]}>
-            <Mic 
-              size={STYLES.cta.iconSize} 
-              color="#FFFFFF"
-            />
+          <View style={styles.ctaWrapper}>
+            {/* Magical Glow Layers with Animation */}
+            <Animated.View style={[
+              styles.glowOuter, 
+              { 
+                backgroundColor: Colors.underTheMoonlight.midnight,
+                transform: [{ scale: pulseAnim }],
+              }
+            ]} />
+            <Animated.View style={[
+              styles.glowMiddle, 
+              { 
+                backgroundColor: Colors.underTheMoonlight.midnight,
+                transform: [{ scale: pulseAnim }],
+              }
+            ]} />
+            <Animated.View style={[
+              styles.glowInner, 
+              { 
+                backgroundColor: Colors.underTheMoonlight.midnight,
+                transform: [{ scale: pulseAnim }],
+              }
+            ]} />
+            
+            {/* Main CTA Icon Container */}
+            <View style={[
+              styles.ctaIconContainer,
+              getCurrentTab() === 'interpret' && styles.ctaIconContainerActive
+            ]}>
+              <Mic 
+                size={STYLES.cta.iconSize} 
+                color="#FFFFFF"
+              />
+            </View>
           </View>
         </TouchableOpacity>
         
@@ -419,6 +472,13 @@ const styles = StyleSheet.create({
   },
   tabButtonCTAActive: {
     // No background change for active CTA - icon container handles it
+  },
+  
+  // CTA Wrapper for positioning glow effects
+  ctaWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   
   // CTA Icon Container - Like the old floating CTA design
