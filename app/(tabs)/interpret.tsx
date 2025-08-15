@@ -331,53 +331,69 @@ export default function InterpretScreen() {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <View style={[styles.headerContent, { backgroundColor: 'transparent' }]}>
-        <Sparkles size={32} color={Colors.underTheMoonlight.dusk} />
-        <Text style={styles.appTitle}>DreamTalk</Text>
-        <Text style={styles.tagline}>Share your dreams, discover their meanings</Text>
-      </View>
+      <BlurView intensity={20} tint="light" style={styles.headerCard}>
+        <View style={[styles.headerContent, { backgroundColor: 'transparent' }]}>
+          <View style={styles.iconContainer}>
+            <Moon size={32} color={Colors.underTheMoonlight.midnight} />
+            <Stars size={28} color={Colors.underTheMoonlight.dusk} style={styles.starsIcon} />
+          </View>
+          <Text style={styles.appTitle}>DreamTalk</Text>
+          <Text style={styles.tagline}>Share your dreams, discover their meanings</Text>
+        </View>
+      </BlurView>
     </View>
   );
 
   const renderTextInput = () => (
     <View style={styles.textInputSection}>
-      <TouchableOpacity
-        style={styles.toggleButton}
-        onPress={() => setShowTextInput(!showTextInput)}
-      >
-        <Type size={20} color={Colors.underTheMoonlight.dusk} />
-        <Text style={styles.toggleText}>
-          {showTextInput ? 'Hide Text Input' : 'Type Instead'}
-        </Text>
-      </TouchableOpacity>
+      <BlurView intensity={15} tint="light" style={styles.toggleCard}>
+        <TouchableOpacity
+          style={styles.toggleButton}
+          onPress={() => setShowTextInput(!showTextInput)}
+        >
+          <Type size={20} color={Colors.underTheMoonlight.midnight} />
+          <Text style={styles.toggleText}>
+            {showTextInput ? 'Hide Text Input' : 'Type Instead'}
+          </Text>
+        </TouchableOpacity>
+      </BlurView>
       
       {showTextInput && (
-        <View style={styles.textInputContainer}>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Describe your dream here..."
-            placeholderTextColor="#999"
-            value={dreamText}
-            onChangeText={setDreamText}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-          />
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              (!dreamText.trim() || isProcessing) && styles.sendButtonDisabled
-            ]}
-            onPress={handleSendText}
-            disabled={!dreamText.trim() || isProcessing}
-          >
-            {isProcessing ? (
-              <Loader size={20} color="#FFFFFF" />
-            ) : (
-              <Send size={20} color="#FFFFFF" />
-            )}
-          </TouchableOpacity>
-        </View>
+        <BlurView intensity={20} tint="light" style={styles.textInputCard}>
+          <View style={styles.textInputContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Describe your dream here..."
+              placeholderTextColor="#666"
+              value={dreamText}
+              onChangeText={setDreamText}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                (!dreamText.trim() || isProcessing) && styles.sendButtonDisabled
+              ]}
+              onPress={handleSendText}
+              disabled={!dreamText.trim() || isProcessing}
+            >
+              <LinearGradient
+                colors={[Colors.underTheMoonlight.midnight, Colors.underTheMoonlight.dusk]}
+                style={styles.sendButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                {isProcessing ? (
+                  <Loader size={20} color="#FFFFFF" />
+                ) : (
+                  <Send size={20} color="#FFFFFF" />
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </BlurView>
       )}
     </View>
   );
@@ -386,18 +402,20 @@ export default function InterpretScreen() {
     <View style={styles.recordSection}>
       <Text style={styles.recordLabel}>Hold to Record Your Dream</Text>
       
-      {/* Lock indicator */}
+      {/* Lock indicator with blur */}
       <Animated.View
         style={[
           styles.lockIndicator,
           { opacity: lockIndicatorOpacity }
         ]}
       >
-        <ArrowUp size={24} color={Colors.underTheMoonlight.dusk} />
-        <Text style={styles.lockText}>Slide up to lock</Text>
+        <BlurView intensity={10} tint="light" style={styles.lockCard}>
+          <ArrowUp size={24} color={Colors.underTheMoonlight.midnight} />
+          <Text style={styles.lockText}>Slide up to lock</Text>
+        </BlurView>
       </Animated.View>
       
-      {/* Main record button with gesture handler */}
+      {/* Hero record button with enhanced design */}
       <View style={styles.recordButtonContainer}>
         <PanGestureHandler
           ref={panGestureRef}
@@ -407,7 +425,7 @@ export default function InterpretScreen() {
         >
           <Animated.View
             style={[
-              styles.recordButton,
+              styles.heroButton,
               { 
                 transform: [
                   { scale: recordButtonScale },
@@ -416,77 +434,101 @@ export default function InterpretScreen() {
               }
             ]}
           >
-            <TouchableOpacity
-              style={styles.recordButtonTouch}
-              onPressIn={handleRecordStart}
-              onPressOut={handleRecordEnd}
-              activeOpacity={0.8}
-            >
-              {isRecording ? (
-                <View style={styles.recordingIndicator}>
-                  <Mic size={40} color="#FFFFFF" />
-                  <View style={styles.recordingPulse} />
-                </View>
-              ) : (
-                <Mic size={40} color="#FFFFFF" />
-              )}
-            </TouchableOpacity>
+            <View style={styles.heroButtonShadow}>
+              <LinearGradient
+                colors={[Colors.underTheMoonlight.midnight, Colors.underTheMoonlight.dusk]}
+                style={styles.heroButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <TouchableOpacity
+                  style={styles.recordButtonTouch}
+                  onPressIn={handleRecordStart}
+                  onPressOut={handleRecordEnd}
+                  activeOpacity={0.8}
+                >
+                  {isRecording ? (
+                    <View style={styles.recordingIndicator}>
+                      <Mic size={48} color="#FFFFFF" strokeWidth={2.5} />
+                      <View style={styles.recordingPulse} />
+                    </View>
+                  ) : (
+                    <Mic size={48} color="#FFFFFF" strokeWidth={2.5} />
+                  )}
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
           </Animated.View>
         </PanGestureHandler>
         
         {/* Stop button for locked recording */}
         {isLocked && (
-          <TouchableOpacity
-            style={styles.stopButton}
-            onPress={handleStopLockedRecording}
-          >
-            <MicOff size={24} color={Colors.underTheMoonlight.midnight} />
-          </TouchableOpacity>
+          <BlurView intensity={15} tint="light" style={styles.stopButtonCard}>
+            <TouchableOpacity
+              style={styles.stopButton}
+              onPress={handleStopLockedRecording}
+            >
+              <MicOff size={24} color={Colors.underTheMoonlight.midnight} />
+            </TouchableOpacity>
+          </BlurView>
         )}
       </View>
       
-      {/* Recording status */}
+      {/* Recording status with glassmorphism */}
       {isRecording && (
-        <View style={styles.recordingStatus}>
-          <View style={styles.recordingDot} />
-          <Text style={styles.recordingTime}>
-            {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
-          </Text>
-          {isLocked && (
-            <View style={styles.lockedIndicator}>
-              <Lock size={16} color={Colors.underTheMoonlight.dusk} />
-              <Text style={styles.lockedText}>Locked</Text>
-            </View>
-          )}
-        </View>
+        <BlurView intensity={20} tint="light" style={styles.recordingStatusCard}>
+          <View style={styles.recordingStatus}>
+            <View style={styles.recordingDot} />
+            <Text style={styles.recordingTime}>
+              {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+            </Text>
+            {isLocked && (
+              <View style={styles.lockedIndicator}>
+                <Lock size={16} color={Colors.underTheMoonlight.midnight} />
+                <Text style={styles.lockedText}>Locked</Text>
+              </View>
+            )}
+          </View>
+        </BlurView>
       )}
     </View>
   );
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.container}>
-        <Animated.View 
-          style={[
-            styles.animatedContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ scale: scaleAnim }],
-            }
-          ]}
-        >
-          <View style={styles.topSection}>
-            {renderHeader()}
-            {renderTextInput()}
-          </View>
-          
-          <View style={styles.centerSection}>
-            {renderRecordButton()}
-          </View>
-          
-          <View style={styles.bottomSection} />
-        </Animated.View>
-      </SafeAreaView>
+      <LinearGradient
+        colors={[
+          Colors.underTheMoonlight.moonlight,
+          Colors.underTheMoonlight.twilight,
+          Colors.underTheMoonlight.dusk,
+        ]}
+        style={styles.gradientBackground}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          <Animated.View 
+            style={[
+              styles.animatedContainer,
+              {
+                opacity: fadeAnim,
+                transform: [{ scale: scaleAnim }],
+              }
+            ]}
+          >
+            <View style={styles.topSection}>
+              {renderHeader()}
+              {renderTextInput()}
+            </View>
+            
+            <View style={styles.centerSection}>
+              {renderRecordButton()}
+            </View>
+            
+            <View style={styles.bottomSection} />
+          </Animated.View>
+        </SafeAreaView>
+      </LinearGradient>
     </GestureHandlerRootView>
   );
 }
@@ -494,7 +536,12 @@ export default function InterpretScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.underTheMoonlight.moonlight,
+  },
+  gradientBackground: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
   },
   animatedContainer: {
     flex: 1,
@@ -516,111 +563,160 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  headerCard: {
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    marginHorizontal: 4,
+    overflow: 'hidden',
+  },
   headerContent: {
     alignItems: 'center',
   },
-  appTitle: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: Colors.underTheMoonlight.midnight,
-    marginTop: 16,
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
+  },
+  starsIcon: {
+    marginLeft: 8,
+  },
+  appTitle: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: Colors.underTheMoonlight.midnight,
+    marginTop: 12,
+    marginBottom: 8,
+    letterSpacing: -0.5,
   },
   tagline: {
     fontSize: 16,
-    color: '#666',
+    color: Colors.underTheMoonlight.dusk,
     textAlign: 'center',
     lineHeight: 22,
+    fontWeight: '500',
   },
   textInputSection: {
     marginBottom: 16,
   },
+  toggleCard: {
+    borderRadius: 20,
+    marginBottom: 16,
+    overflow: 'hidden',
+    marginHorizontal: 4,
+  },
   toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderRadius: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
   },
   toggleText: {
     fontSize: 16,
-    fontWeight: '500',
-    color: Colors.underTheMoonlight.dusk,
+    fontWeight: '600',
+    color: Colors.underTheMoonlight.midnight,
     marginLeft: 12,
   },
+  textInputCard: {
+    borderRadius: 24,
+    marginHorizontal: 4,
+    overflow: 'hidden',
+  },
   textInputContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
+    padding: 24,
   },
   textInput: {
     fontSize: 16,
-    color: '#333',
+    color: Colors.underTheMoonlight.midnight,
     lineHeight: 24,
     minHeight: 100,
-    marginBottom: 16,
+    marginBottom: 20,
+    fontWeight: '500',
   },
   sendButton: {
-    backgroundColor: Colors.underTheMoonlight.midnight,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-end',
+    shadowColor: Colors.underTheMoonlight.midnight,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   sendButtonDisabled: {
-    backgroundColor: '#CCC',
+    opacity: 0.5,
+  },
+  sendButtonGradient: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   recordSection: {
     alignItems: 'center',
   },
   recordLabel: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
+    fontSize: 18,
+    color: Colors.underTheMoonlight.midnight,
+    marginBottom: 24,
     textAlign: 'center',
+    fontWeight: '600',
+    letterSpacing: -0.2,
   },
   lockIndicator: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+  },
+  lockCard: {
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   lockText: {
     fontSize: 14,
-    color: Colors.underTheMoonlight.dusk,
-    marginTop: 4,
+    color: Colors.underTheMoonlight.midnight,
+    marginLeft: 8,
+    fontWeight: '500',
   },
   recordButtonContainer: {
     alignItems: 'center',
     position: 'relative',
   },
-  recordButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: Colors.underTheMoonlight.midnight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 12,
+  heroButton: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroButtonShadow: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 70,
+    shadowColor: Colors.underTheMoonlight.midnight,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.4,
+    shadowRadius: 24,
+    elevation: 20,
+  },
+  heroButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   recordButtonTouch: {
     width: '100%',
     height: '100%',
-    borderRadius: 50,
+    borderRadius: 70,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -631,48 +727,30 @@ const styles = StyleSheet.create({
   },
   recordingPulse: {
     position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: Colors.underTheMoonlight.midnight,
-    opacity: 0.3,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.2,
+  },
+  stopButtonCard: {
+    position: 'absolute',
+    top: -160,
+    borderRadius: 28,
+    overflow: 'hidden',
   },
   stopButton: {
-    position: 'absolute',
-    top: -140,
-    backgroundColor: '#FFFFFF',
     width: 56,
     height: 56,
-    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
   },
-  recordingStatus: {
-    marginTop: 32,
-    shadowColor: Colors.underTheMoonlight.midnight,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
-    ...Platform.select({
-      ios: {
-        shadowColor: Colors.underTheMoonlight.midnight,
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
-      },
-    }),
-  },
-  recordingStatusBlur: {
+  recordingStatusCard: {
+    marginTop: 24,
     borderRadius: 24,
     overflow: 'hidden',
   },
-  recordingStatusGradient: {
+  recordingStatus: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
