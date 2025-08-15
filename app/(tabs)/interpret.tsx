@@ -36,18 +36,9 @@ import Colors from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
-// Responsive design helpers
-const getResponsiveValue = (base: number, factor: number = 1) => {
-  // Base for iPhone 11 (414x896)
-  const baseWidth = 414;
-  const scale = screenWidth / baseWidth;
-  return Math.round(base * scale * factor);
-};
-
-// Web'deki gibi basit - sabit değerler
-const responsiveRecordButton = {
+// Web-style constants - fixed values only
+const RECORD_BUTTON = {
   size: 140,
   borderRadius: 70,
   iconSize: 48,
@@ -477,11 +468,11 @@ export default function InterpretScreen() {
                 >
                   {isRecording ? (
                     <View style={styles.recordingIndicator}>
-                      <Mic size={responsiveRecordButton.iconSize} color="#FFFFFF" strokeWidth={2.5} />
+                      <Mic size={RECORD_BUTTON.iconSize} color="#FFFFFF" strokeWidth={2.5} />
                       <View style={styles.recordingPulse} />
                     </View>
                   ) : (
-                    <Mic size={responsiveRecordButton.iconSize} color="#FFFFFF" strokeWidth={2.5} />
+                    <Mic size={RECORD_BUTTON.iconSize} color="#FFFFFF" strokeWidth={2.5} />
                   )}
                 </TouchableOpacity>
               </LinearGradient>
@@ -667,16 +658,16 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   heroButton: {
-    width: responsiveRecordButton.size,
-    height: responsiveRecordButton.size,
-    borderRadius: responsiveRecordButton.borderRadius,
+    width: RECORD_BUTTON.size,
+    height: RECORD_BUTTON.size,
+    borderRadius: RECORD_BUTTON.borderRadius,
     alignItems: "center",
     justifyContent: "center",
   },
   heroButtonShadow: {
     width: "100%",
     height: "100%",
-    borderRadius: responsiveRecordButton.borderRadius,
+    borderRadius: RECORD_BUTTON.borderRadius,
     shadowColor: Colors.underTheMoonlight.midnight,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.4,
@@ -686,14 +677,14 @@ const styles = StyleSheet.create({
   heroButtonGradient: {
     width: "100%",
     height: "100%",
-    borderRadius: responsiveRecordButton.borderRadius,
+    borderRadius: RECORD_BUTTON.borderRadius,
     alignItems: "center",
     justifyContent: "center",
   },
   recordButtonTouch: {
     width: "100%",
     height: "100%",
-    borderRadius: responsiveRecordButton.borderRadius,
+    borderRadius: RECORD_BUTTON.borderRadius,
     alignItems: "center",
     justifyContent: "center",
   },

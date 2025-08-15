@@ -21,18 +21,7 @@ import {
 } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 
-// Get screen dimensions for responsive design
-const { width: screenWidth } = Dimensions.get('window');
-
-// Responsive design helpers
-const getResponsiveValue = (base: number, factor: number = 1) => {
-  // Base for iPhone 11 (414x896)  
-  const baseWidth = 414;
-  const scale = screenWidth / baseWidth;
-  return Math.round(base * scale * factor);
-};
-
-// Web'deki gibi basit - sabit bottom spacer
+// Web-style constants - fixed values only
 const BOTTOM_SPACER_HEIGHT = 120;
 
 import {

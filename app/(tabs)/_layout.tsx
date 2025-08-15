@@ -12,37 +12,34 @@ import {
 import { BookOpen, Mic, User } from "lucide-react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
-import * as Device from 'expo-device';
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 
-// Get screen dimensions
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
-// Responsive design helpers
-const getResponsiveValue = (base: number, factor: number = 1) => {
-  // Base for iPhone 11 (414x896)
-  const baseWidth = 414;
-  const scale = screenWidth / baseWidth;
-  return Math.round(base * scale * factor);
-};
-
-// Web'deki gibi basit responsive sistem - sadece temel değerler
-const responsiveStyles = {
-  // Tüm cihazlar için sabit değerler (web'deki rem gibi)
-  tabBarHeight: 70,
-  tabBarBottom: 40,
-  tabBarMarginHorizontal: 30,
-  tabBarBorderRadius: 25,
-  iconContainerSize: 50,
-  iconSize: 24,
-  ctaContainerSize: 78,
-  ctaBorderRadius: 39,
-  ctaBorderWidth: 4,
-  glowOuterSize: 120,
-  glowMiddleSize: 105,
-  glowInnerSize: 95,
+// Web-style constants - no complexity, just fixed values
+const STYLES = {
+  tabBar: {
+    height: 70,
+    bottom: 40,
+    marginHorizontal: 30,
+    borderRadius: 25,
+    paddingHorizontal: 20,
+  },
+  icon: {
+    containerSize: 50,
+    size: 24,
+  },
+  cta: {
+    size: 78,
+    borderRadius: 39,
+    borderWidth: 4,
+    iconSize: 32,
+  },
+  glow: {
+    outer: 120,
+    middle: 105,
+    inner: 95,
+  },
 };
 
 // HapticTab component for native haptic feedback
@@ -96,7 +93,7 @@ function TabBarIcon({
   icon: Icon,
   color,
   focused,
-  size = responsiveStyles.iconSize,
+  size = STYLES.icon.size,
 }: {
   icon: any;
   color: string;
@@ -191,7 +188,7 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
 
       {/* Main CTA button */}
       <View style={[styles.ctaContainer, { backgroundColor: ctaColor }]}>
-        <Mic size={getResponsiveValue(32)} color="#FFFFFF" strokeWidth={2.5} />
+        <Mic size={STYLES.cta.iconSize} color="#FFFFFF" strokeWidth={2.5} />
       </View>
     </View>
   );
@@ -269,25 +266,22 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    // Web'deki gibi basit flexbox - bu kadar!
+    // Pure CSS flexbox approach
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-around", // Eşit dağıtım
+    justifyContent: "space-around",
     alignItems: "center",
     position: "absolute",
-    bottom: responsiveStyles.tabBarBottom,
+    bottom: STYLES.tabBar.bottom,
     left: 0,
     right: 0,
-    marginHorizontal: responsiveStyles.tabBarMarginHorizontal,
+    marginHorizontal: STYLES.tabBar.marginHorizontal,
     backgroundColor: Colors.underTheMoonlight.moonlight,
-    borderRadius: responsiveStyles.tabBarBorderRadius,
-    height: responsiveStyles.tabBarHeight,
-    paddingHorizontal: 20, // Web'deki gibi sabit padding
+    borderRadius: STYLES.tabBar.borderRadius,
+    height: STYLES.tabBar.height,
+    paddingHorizontal: STYLES.tabBar.paddingHorizontal,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
@@ -297,9 +291,9 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: "center",
     justifyContent: "center",
-    width: responsiveStyles.iconContainerSize,
-    height: responsiveStyles.iconContainerSize,
-    borderRadius: responsiveStyles.iconContainerSize / 2,
+    width: STYLES.icon.containerSize,
+    height: STYLES.icon.containerSize,
+    borderRadius: STYLES.icon.containerSize / 2,
   },
   iconContainerFocused: {
     backgroundColor: Colors.underTheMoonlight.dusk,
@@ -311,35 +305,34 @@ const styles = StyleSheet.create({
   ctaContainer: {
     alignItems: "center",
     justifyContent: "center",
-    width: responsiveStyles.ctaContainerSize,
-    height: responsiveStyles.ctaContainerSize,
-    borderRadius: responsiveStyles.ctaBorderRadius,
-    borderWidth: responsiveStyles.ctaBorderWidth,
-    borderColor: Colors.underTheMoonlight.moonlight, // Same as page background
+    width: STYLES.cta.size,
+    height: STYLES.cta.size,
+    borderRadius: STYLES.cta.borderRadius,
+    borderWidth: STYLES.cta.borderWidth,
+    borderColor: Colors.underTheMoonlight.moonlight,
     zIndex: 10,
   },
-  // Glow effect layers for magical appearance - responsive sizing
   glowOuter: {
     position: "absolute",
-    width: responsiveStyles.glowOuterSize,
-    height: responsiveStyles.glowOuterSize,
-    borderRadius: responsiveStyles.glowOuterSize / 2,
+    width: STYLES.glow.outer,
+    height: STYLES.glow.outer,
+    borderRadius: STYLES.glow.outer / 2,
     opacity: 0.15,
     zIndex: 1,
   },
   glowMiddle: {
     position: "absolute",
-    width: responsiveStyles.glowMiddleSize,
-    height: responsiveStyles.glowMiddleSize,
-    borderRadius: responsiveStyles.glowMiddleSize / 2,
+    width: STYLES.glow.middle,
+    height: STYLES.glow.middle,
+    borderRadius: STYLES.glow.middle / 2,
     opacity: 0.25,
     zIndex: 2,
   },
   glowInner: {
     position: "absolute",
-    width: responsiveStyles.glowInnerSize,
-    height: responsiveStyles.glowInnerSize,
-    borderRadius: responsiveStyles.glowInnerSize / 2,
+    width: STYLES.glow.inner,
+    height: STYLES.glow.inner,
+    borderRadius: STYLES.glow.inner / 2,
     opacity: 0.35,
     zIndex: 3,
   },
