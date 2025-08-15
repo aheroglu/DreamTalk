@@ -12,12 +12,15 @@ import {
   Platform,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { Text, View } from "@/components/Themed";
 import {
   GestureHandlerRootView,
   PanGestureHandler,
   State,
+  Directions,
 } from "react-native-gesture-handler";
+import * as Haptics from 'expo-haptics';
 import {
   Mic,
   MicOff,
@@ -37,6 +40,7 @@ import { BlurView } from "expo-blur";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function InterpretScreen() {
+  const router = useRouter();
   const [isRecording, setIsRecording] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -61,8 +65,9 @@ export default function InterpretScreen() {
   const heroContentScale = useRef(new Animated.Value(0.9)).current;
   const heroBg = useRef(new Animated.Value(0)).current;
 
-  // Gesture handler ref
+  // Gesture handler refs
   const panGestureRef = useRef();
+  const swipeGestureRef = useRef();
 
   // Timer ref
   const timerRef = useRef(null);
@@ -333,6 +338,36 @@ export default function InterpretScreen() {
     }
   };
 
+  // Handle tab swipe navigation
+  const handleTabSwipe = (event: any) => {
+    const { translationX, velocityX, state } = event.nativeEvent;
+    
+    // Only handle gesture end
+    if (state !== State.END) return;
+    
+    const swipeThreshold = 100;
+    const velocityThreshold = 800;
+    
+    // Swipe right -> go to library (previous tab)
+    if ((translationX > swipeThreshold || velocityX > velocityThreshold)) {
+      if (Platform.OS === 'ios') {
+        Haptics.selectionAsync();
+      } else {
+        Vibration.vibrate(20);
+      }
+      router.push('/(tabs)/library');
+    }
+    // Swipe left -> go to profile (next tab)
+    else if ((translationX < -swipeThreshold || velocityX < -velocityThreshold)) {
+      if (Platform.OS === 'ios') {
+        Haptics.selectionAsync();
+      } else {
+        Vibration.vibrate(20);
+      }
+      router.push('/(tabs)/profile');
+    }
+  };
+
   const renderHeader = () => (
     <View style={styles.header}>
       <View style={[styles.headerContent, { backgroundColor: 'transparent' }]}>
@@ -408,6 +443,8 @@ export default function InterpretScreen() {
           onGestureEvent={handlePanGesture}
           onHandlerStateChange={handlePanGesture}
           enabled={isRecording && !isLocked}
+          direction={Directions.UP}
+          waitFor={swipeGestureRef}
         >
           <Animated.View
             style={[
@@ -482,15 +519,23 @@ export default function InterpretScreen() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
-        <Animated.View 
-          style={[
-            styles.animatedContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ scale: scaleAnim }],
-            }
-          ]}
+        <PanGestureHandler
+          ref={swipeGestureRef}
+          onHandlerStateChange={handleTabSwipe}
+          direction={Directions.LEFT | Directions.RIGHT}
+          minDist={50}
+          shouldCancelWhenOutside={true}
+          simultaneousHandlers={[panGestureRef]}
         >
+          <Animated.View 
+            style={[
+              styles.animatedContainer,
+              {
+                opacity: fadeAnim,
+                transform: [{ scale: scaleAnim }],
+              }
+            ]}
+          >
           <View style={styles.topSection}>
             {renderHeader()}
             {renderTextInput()}
@@ -500,8 +545,9 @@ export default function InterpretScreen() {
             {renderRecordButton()}
           </View>
           
-          <View style={styles.bottomSection} />
-        </Animated.View>
+            <View style={styles.bottomSection} />
+          </Animated.View>
+        </PanGestureHandler>
       </SafeAreaView>
     </GestureHandlerRootView>
   );

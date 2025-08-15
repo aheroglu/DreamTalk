@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react";
-import { Tabs } from "expo-router";
-import { View, StyleSheet, Platform, Animated, Vibration, TouchableOpacity } from "react-native";
+import { Tabs, useRouter, useSegments } from "expo-router";
+import { View, StyleSheet, Platform, Animated, Vibration, TouchableOpacity, Dimensions } from "react-native";
 import { BookOpen, Mic, User } from "lucide-react-native";
+import { PanGestureHandler, Directions } from "react-native-gesture-handler";
 import * as Haptics from 'expo-haptics';
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
@@ -161,58 +162,69 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
+  const segments = useSegments();
+  
+  // Tab navigation array for swipe gestures
+  const tabs = ['library', 'interpret', 'profile'];
+  
+  // Get current tab index
+  const getCurrentTabIndex = () => {
+    const currentTab = segments[1]; // Get the tab name from segments
+    const index = tabs.indexOf(currentTab);
+    return index !== -1 ? index : 1; // Default to interpret (index 1)
+  };
 
   return (
-    <Tabs
-      initialRouteName="interpret"
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
-        tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tabIconDefault,
-        headerShown: false, // Remove all headers
-        tabBarStyle: styles.tabBar,
-        tabBarShowLabel: false,
-        tabBarHideOnKeyboard: Platform.OS === "ios",
-        tabBarItemStyle: {
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        // Add smooth transition animations and swipe gestures
-        gestureEnabled: true,
-        swipeEnabled: true,
-        lazy: true,
-        tabBarButton: HapticTab,
-      }}
-    >
-      <Tabs.Screen
-        name="library"
-        options={{
-          title: "Dream Library",
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon icon={BookOpen} color={color} focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="interpret"
-        options={{
-          title: "Interpret Dream",
-          tabBarIcon: ({ color, focused }) => (
-            <CTATabIcon color={color} focused={focused} />
-          ),
-          tabBarButton: EnhancedHapticTab,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon icon={User} color={color} focused={focused} />
-          ),
-        }}
-      />
-    </Tabs>
+    <View style={{ flex: 1 }}>
+      <Tabs
+          initialRouteName="interpret"
+          screenOptions={{
+            tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
+            tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tabIconDefault,
+            headerShown: false, // Remove all headers
+            tabBarStyle: styles.tabBar,
+            tabBarShowLabel: false,
+            tabBarHideOnKeyboard: Platform.OS === "ios",
+            tabBarItemStyle: {
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+            },
+            lazy: true,
+            tabBarButton: HapticTab,
+          }}
+        >
+          <Tabs.Screen
+            name="library"
+            options={{
+              title: "Dream Library",
+              tabBarIcon: ({ color, focused }) => (
+                <TabBarIcon icon={BookOpen} color={color} focused={focused} />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="interpret"
+            options={{
+              title: "Interpret Dream",
+              tabBarIcon: ({ color, focused }) => (
+                <CTATabIcon color={color} focused={focused} />
+              ),
+              tabBarButton: EnhancedHapticTab,
+            }}
+          />
+          <Tabs.Screen
+            name="profile"
+            options={{
+              title: "Profile",
+              tabBarIcon: ({ color, focused }) => (
+                <TabBarIcon icon={User} color={color} focused={focused} />
+              ),
+            }}
+          />
+        </Tabs>
+    </View>
   );
 }
 

@@ -7,9 +7,14 @@ import {
   Switch,
   Alert,
   Animated,
+  Platform,
+  Vibration,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from "expo-router";
 import { Text, View } from '@/components/Themed';
+import { PanGestureHandler, Directions, State, GestureHandlerRootView } from "react-native-gesture-handler";
+import * as Haptics from 'expo-haptics';
 import {
   User,
   Settings,
@@ -46,12 +51,34 @@ const profileData = {
 };
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const [settings, setSettings] = useState(profileData.settings);
   const [isAuthenticated, setIsAuthenticated] = useState(profileData.isAuthenticated);
 
   // Page transition animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  // Handle tab swipe navigation
+  const handleTabSwipe = (event: any) => {
+    const { translationX, velocityX, state } = event.nativeEvent;
+    
+    // Only handle gesture end
+    if (state !== State.END) return;
+    
+    const swipeThreshold = 100;
+    const velocityThreshold = 800;
+    
+    // Only swipe right -> go to interpret (previous tab)
+    if ((translationX > swipeThreshold || velocityX > velocityThreshold)) {
+      if (Platform.OS === 'ios') {
+        Haptics.selectionAsync();
+      } else {
+        Vibration.vibrate(20);
+      }
+      router.push('/(tabs)/interpret');
+    }
+  };
 
   // Page focus animation
   useFocusEffect(
@@ -223,16 +250,23 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Animated.View 
-        style={[
-          styles.animatedContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          }
-        ]}
-      >
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <PanGestureHandler
+          onHandlerStateChange={handleTabSwipe}
+          direction={Directions.RIGHT}
+          minDist={50}
+          shouldCancelWhenOutside={true}
+        >
+          <Animated.View 
+            style={[
+              styles.animatedContainer,
+              {
+                opacity: fadeAnim,
+                transform: [{ scale: scaleAnim }],
+              }
+            ]}
+          >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -266,9 +300,11 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.bottomSpacer} />
-        </ScrollView>
-      </Animated.View>
-    </SafeAreaView>
+          </ScrollView>
+          </Animated.View>
+        </PanGestureHandler>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 

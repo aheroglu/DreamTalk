@@ -7,10 +7,15 @@ import {
   FlatList,
   SafeAreaView,
   Animated,
+  Platform,
+  Vibration,
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from "expo-router";
 import { Text, View } from "@/components/Themed";
 import { Search, Star, Moon, Heart } from "lucide-react-native";
+import { PanGestureHandler, Directions, State, GestureHandlerRootView } from "react-native-gesture-handler";
+import * as Haptics from 'expo-haptics';
 import Colors from "@/constants/Colors";
 
 // Dummy dream symbols data
@@ -74,12 +79,34 @@ const dreamSymbols = [
 const categories = ["All", "Nature", "Animals", "Objects"];
 
 export default function LibraryScreen() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   // Page transition animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  // Handle tab swipe navigation
+  const handleTabSwipe = (event: any) => {
+    const { translationX, velocityX, state } = event.nativeEvent;
+    
+    // Only handle gesture end
+    if (state !== State.END) return;
+    
+    const swipeThreshold = 100;
+    const velocityThreshold = 800;
+    
+    // Only swipe left -> go to interpret (next tab)
+    if ((translationX < -swipeThreshold || velocityX < -velocityThreshold)) {
+      if (Platform.OS === 'ios') {
+        Haptics.selectionAsync();
+      } else {
+        Vibration.vibrate(20);
+      }
+      router.push('/(tabs)/interpret');
+    }
+  };
 
   // Page focus animation
   useFocusEffect(
@@ -162,16 +189,23 @@ export default function LibraryScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Animated.View 
-        style={[
-          styles.animatedContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }],
-          }
-        ]}
-      >
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <PanGestureHandler
+          onHandlerStateChange={handleTabSwipe}
+          direction={Directions.LEFT}
+          minDist={50}
+          shouldCancelWhenOutside={true}
+        >
+          <Animated.View 
+            style={[
+              styles.animatedContainer,
+              {
+                opacity: fadeAnim,
+                transform: [{ scale: scaleAnim }],
+              }
+            ]}
+          >
         <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
@@ -218,9 +252,11 @@ export default function LibraryScreen() {
             ItemSeparatorComponent={() => <View style={styles.cardSeparator} />}
           />
         </View>
-        </ScrollView>
-      </Animated.View>
-    </SafeAreaView>
+          </ScrollView>
+          </Animated.View>
+        </PanGestureHandler>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
