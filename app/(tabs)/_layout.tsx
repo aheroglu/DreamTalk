@@ -243,10 +243,10 @@ export default function TabLayout() {
         </Tabs>
       </View>
 
-      {/* STEP 3: Interactive Tabbar with Touch Handlers & Active States */}
+      {/* STEP 4: Production Ready Tabbar - Clean & Final */}
       <View style={styles.customTabbarContainer}>
         
-        {/* Tab 1: Library - 33.33% width */}
+        {/* Tab 1: Library */}
         <TouchableOpacity 
           style={[
             styles.tabButton,
@@ -257,35 +257,32 @@ export default function TabLayout() {
         >
           <BookOpen 
             size={STYLES.icon.size} 
-            color={getCurrentTab() === 'library' ? Colors.underTheMoonlight.midnight : Colors.underTheMoonlight.dusk} 
+            color={getCurrentTab() === 'library' ? Colors.underTheMoonlight.moonlight : Colors.underTheMoonlight.dusk} 
           />
-          <Text style={[
-            styles.tabDebugText,
-            getCurrentTab() === 'library' && styles.tabDebugTextActive
-          ]}>LIB</Text>
         </TouchableOpacity>
         
-        {/* Tab 2: Interpret (CTA) - 33.33% width */}
+        {/* Tab 2: Interpret (CTA) */}
         <TouchableOpacity 
           style={[
             styles.tabButton,
             styles.tabButtonCTA,
-            getCurrentTab() === 'interpret' && styles.tabButtonActive
+            getCurrentTab() === 'interpret' && styles.tabButtonCTAActive
           ]}
           onPress={() => handleTabPress('interpret')}
           activeOpacity={0.8}
         >
-          <Mic 
-            size={STYLES.cta.iconSize} 
-            color={Colors.underTheMoonlight.midnight} 
-          />
-          <Text style={[
-            styles.tabDebugText,
-            styles.tabDebugTextCTA
-          ]}>INT</Text>
+          <View style={[
+            styles.ctaIconContainer,
+            getCurrentTab() === 'interpret' && styles.ctaIconContainerActive
+          ]}>
+            <Mic 
+              size={STYLES.cta.iconSize} 
+              color="#FFFFFF"
+            />
+          </View>
         </TouchableOpacity>
         
-        {/* Tab 3: Profile - 33.33% width */}
+        {/* Tab 3: Profile */}
         <TouchableOpacity 
           style={[
             styles.tabButton,
@@ -296,12 +293,8 @@ export default function TabLayout() {
         >
           <User 
             size={STYLES.icon.size} 
-            color={getCurrentTab() === 'profile' ? Colors.underTheMoonlight.midnight : Colors.underTheMoonlight.dusk} 
+            color={getCurrentTab() === 'profile' ? Colors.underTheMoonlight.moonlight : Colors.underTheMoonlight.dusk} 
           />
-          <Text style={[
-            styles.tabDebugText,
-            getCurrentTab() === 'profile' && styles.tabDebugTextActive
-          ]}>PRO</Text>
         </TouchableOpacity>
         
       </View>
@@ -382,7 +375,7 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
 
-  // STEP 1: Custom Tabbar Skeleton Styles
+  // STEP 4: Production Ready Custom Tabbar  
   customTabbarContainer: {
     // STEP 2: Perfect CSS Grid Distribution
     display: "flex",
@@ -408,45 +401,45 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.05)",
   },
   
-  // STEP 3: Interactive Tab Button Styles with Active States
+  // STEP 4: Production Ready Tab Button Styles - Clean & Polished
   tabButton: {
-    // Each tab gets exactly 1/3 of the space
+    // Perfect CSS Grid: Each tab = 33.33%
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     height: "100%",
-    // Subtle background for visual feedback
-    backgroundColor: "rgba(255,255,255,0.05)",
-    marginHorizontal: 2,
-    borderRadius: 8,
+    borderRadius: STYLES.icon.containerSize / 2,
   },
   tabButtonActive: {
-    // Active state styling
-    backgroundColor: Colors.underTheMoonlight.dusk,
+    // Active state with subtle background
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   tabButtonCTA: {
-    // Special styling for CTA button (interpret)
-    backgroundColor: "rgba(255,255,255,0.15)",
+    // CTA button gets no special background - handled by ctaIconContainer
   },
-  tabDebugText: {
-    color: Colors.underTheMoonlight.dusk,
-    fontSize: 10,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-  tabDebugTextActive: {
-    color: Colors.underTheMoonlight.moonlight, // Light text on dark background
-    fontWeight: "700",
-  },
-  tabDebugTextCTA: {
-    color: Colors.underTheMoonlight.midnight,
-    fontWeight: "700",
+  tabButtonCTAActive: {
+    // No background change for active CTA - icon container handles it
   },
   
-  skeletonText: {
-    color: Colors.underTheMoonlight.midnight,
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: "500",
+  // CTA Icon Container - Like the old floating CTA design
+  ctaIconContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: STYLES.cta.size,
+    height: STYLES.cta.size,
+    borderRadius: STYLES.cta.borderRadius,
+    backgroundColor: Colors.underTheMoonlight.midnight,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  ctaIconContainerActive: {
+    // More prominent when active
+    backgroundColor: Colors.underTheMoonlight.dusk,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });
