@@ -34,7 +34,8 @@
     "react-native-web": "~0.20.0",
     "react-native-gesture-handler": "~2.24.0",
     "expo-linear-gradient": "~14.1.5",
-    "expo-blur": "~14.1.5"
+    "expo-blur": "~14.1.5",
+    "expo-haptics": "~14.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
