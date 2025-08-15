@@ -270,10 +270,8 @@ export default function TabLayout() {
         </Tabs>
       </View>
 
-      {/* STEP 4: Production Ready Tabbar - Clean & Final */}
       <View style={styles.customTabbarContainer}>
         
-        {/* Tab 1: Library */}
         <TouchableOpacity 
           style={[
             styles.tabButton,
@@ -288,7 +286,6 @@ export default function TabLayout() {
           />
         </TouchableOpacity>
         
-        {/* Tab 2: Interpret (CTA) with Magical Glow Effects */}
         <TouchableOpacity 
           style={[
             styles.tabButton,
@@ -299,7 +296,6 @@ export default function TabLayout() {
           activeOpacity={0.8}
         >
           <View style={styles.ctaWrapper}>
-            {/* Magical Glow Layers with Animation */}
             <Animated.View style={[
               styles.glowOuter, 
               { 
@@ -322,7 +318,6 @@ export default function TabLayout() {
               }
             ]} />
             
-            {/* Main CTA Icon Container */}
             <View style={[
               styles.ctaIconContainer,
               getCurrentTab() === 'interpret' && styles.ctaIconContainerActive
@@ -335,7 +330,6 @@ export default function TabLayout() {
           </View>
         </TouchableOpacity>
         
-        {/* Tab 3: Profile */}
         <TouchableOpacity 
           style={[
             styles.tabButton,

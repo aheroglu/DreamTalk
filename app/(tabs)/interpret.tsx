@@ -512,21 +512,28 @@ export default function InterpretScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.container}>
-        <PanGestureHandler
-          onHandlerStateChange={handleTabSwipe}
-          minDist={50}
-          shouldCancelWhenOutside={true}
-        >
-          <Animated.View
-            style={[
-              styles.animatedContainer,
-              {
-                opacity: fadeAnim,
-                transform: [{ scale: scaleAnim }],
-              },
-            ]}
+      <LinearGradient
+        colors={[
+          Colors.underTheMoonlight.moonlight, // Top: same as current
+          '#F8F8FF' // Bottom: very light lavender/white
+        ]}
+        style={styles.container}
+      >
+        <SafeAreaView style={styles.transparentContainer}>
+          <PanGestureHandler
+            onHandlerStateChange={handleTabSwipe}
+            minDist={50}
+            shouldCancelWhenOutside={true}
           >
+            <Animated.View
+              style={[
+                styles.animatedContainer,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ scale: scaleAnim }],
+                },
+              ]}
+            >
             <View style={styles.topSection}>
               {renderHeader()}
               {renderTextInput()}
@@ -534,10 +541,11 @@ export default function InterpretScreen() {
 
             <View style={styles.centerSection}>{renderRecordButton()}</View>
 
-            <View style={styles.bottomSection} />
-          </Animated.View>
-        </PanGestureHandler>
-      </SafeAreaView>
+              <View style={styles.bottomSection} />
+            </Animated.View>
+          </PanGestureHandler>
+        </SafeAreaView>
+      </LinearGradient>
     </GestureHandlerRootView>
   );
 }
@@ -545,7 +553,10 @@ export default function InterpretScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.underTheMoonlight.moonlight,
+  },
+  transparentContainer: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   animatedContainer: {
     flex: 1,

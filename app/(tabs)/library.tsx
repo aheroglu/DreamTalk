@@ -21,6 +21,7 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/Colors";
 
 // Web-style constants - fixed values only
@@ -210,12 +211,19 @@ export default function LibraryScreen() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.container}>
-        <PanGestureHandler
-          onHandlerStateChange={handleTabSwipe}
-          minDist={50}
-          shouldCancelWhenOutside={true}
-        >
+      <LinearGradient
+        colors={[
+          Colors.underTheMoonlight.moonlight, // Top: same as current
+          '#F8F8FF' // Bottom: very light lavender/white
+        ]}
+        style={styles.container}
+      >
+        <SafeAreaView style={styles.transparentContainer}>
+          <PanGestureHandler
+            onHandlerStateChange={handleTabSwipe}
+            minDist={50}
+            shouldCancelWhenOutside={true}
+          >
           <Animated.View
             style={[
               styles.animatedContainer,
@@ -273,10 +281,11 @@ export default function LibraryScreen() {
                   )}
                 />
               </View>
-            </ScrollView>
-          </Animated.View>
-        </PanGestureHandler>
-      </SafeAreaView>
+              </ScrollView>
+            </Animated.View>
+          </PanGestureHandler>
+        </SafeAreaView>
+      </LinearGradient>
     </GestureHandlerRootView>
   );
 }
@@ -284,7 +293,10 @@ export default function LibraryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.underTheMoonlight.moonlight,
+  },
+  transparentContainer: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   animatedContainer: {
     flex: 1,
