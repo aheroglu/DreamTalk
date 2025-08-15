@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Tabs, useRouter, useSegments } from "expo-router";
 import {
   View,
+  Text,
   StyleSheet,
   Platform,
   Animated,
@@ -14,7 +15,6 @@ import { PanGestureHandler } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 
 // Web-style constants - no complexity, just fixed values
 const STYLES = {
@@ -218,7 +218,7 @@ export default function TabLayout() {
           initialRouteName="interpret"
           screenOptions={{
             headerShown: false,
-            tabBarStyle: { display: 'none' }, // Hide default tabbar
+            tabBarStyle: { display: "none" }, // Hide default tabbar
           }}
         >
           <Tabs.Screen name="library" />
@@ -227,12 +227,27 @@ export default function TabLayout() {
         </Tabs>
       </View>
 
-      {/* STEP 1: Custom Tabbar Skeleton - Pure Flexbox Container */}
+      {/* STEP 2: Custom Tabbar with 3 Tab Buttons - Perfect Grid */}
       <View style={styles.customTabbarContainer}>
-        <Text style={styles.skeletonText}>
-          📱 Custom Tabbar Skeleton - Step 1{'\n'}
-          Pure Flexbox Container Ready
-        </Text>
+        
+        {/* Tab 1: Library - 33.33% width */}
+        <View style={styles.tabButton}>
+          <BookOpen size={STYLES.icon.size} color={Colors.underTheMoonlight.dusk} />
+          <Text style={styles.tabDebugText}>LIB</Text>
+        </View>
+        
+        {/* Tab 2: Interpret (CTA) - 33.33% width */}
+        <View style={styles.tabButton}>
+          <Mic size={STYLES.cta.iconSize} color={Colors.underTheMoonlight.midnight} />
+          <Text style={styles.tabDebugText}>INT</Text>
+        </View>
+        
+        {/* Tab 3: Profile - 33.33% width */}
+        <View style={styles.tabButton}>
+          <User size={STYLES.icon.size} color={Colors.underTheMoonlight.dusk} />
+          <Text style={styles.tabDebugText}>PRO</Text>
+        </View>
+        
       </View>
     </View>
   );
@@ -310,15 +325,15 @@ const styles = StyleSheet.create({
     opacity: 0.35,
     zIndex: 3,
   },
-  
+
   // STEP 1: Custom Tabbar Skeleton Styles
   customTabbarContainer: {
-    // Pure CSS flexbox approach - exactly like web
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
+    // STEP 2: Perfect CSS Grid Distribution
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between", // Even distribution
+    alignItems: "center",
+    position: "absolute",
     bottom: STYLES.tabBar.bottom,
     left: 0,
     right: 0,
@@ -336,10 +351,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.05)",
   },
+  
+  // STEP 2: Tab Button Styles - Perfect 33.33% Distribution
+  tabButton: {
+    // Each tab gets exactly 1/3 of the space
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    height: "100%",
+    // Debug: Add subtle background to see distribution
+    backgroundColor: "rgba(255,255,255,0.1)",
+    marginHorizontal: 2,
+    borderRadius: 8,
+  },
+  tabDebugText: {
+    color: Colors.underTheMoonlight.midnight,
+    fontSize: 10,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  
   skeletonText: {
     color: Colors.underTheMoonlight.midnight,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
