@@ -272,6 +272,17 @@ export default function TabLayout() {
             flex: 1,
             alignItems: "center",
             justifyContent: "center",
+            height: "100%",
+            width: "33.333%", // Force equal distribution
+            minWidth: "33.333%",
+            maxWidth: "33.333%",
+          },
+          tabBarContentContainerStyle: {
+            flex: 1,
+            flexDirection: "row",
+            justifyContent: "space-around",
+            alignItems: "center",
+            width: "100%",
           },
           lazy: true,
           tabBarButton: HapticTab,
@@ -313,7 +324,8 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   tabBar: {
     display: "flex",
-    justifyContent: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     position: "absolute",
     bottom: responsiveStyles.tabBarBottom,
@@ -324,7 +336,8 @@ const styles = StyleSheet.create({
     borderRadius: responsiveStyles.tabBarBorderRadius,
     height: responsiveStyles.tabBarHeight,
     paddingTop: getResponsiveValue(15),
-    paddingHorizontal: getResponsiveValue(10),
+    paddingHorizontal: 0, // Remove horizontal padding to allow full width distribution
+    paddingBottom: getResponsiveValue(5),
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
