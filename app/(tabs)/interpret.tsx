@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -10,10 +10,14 @@ import {
   Alert,
   Dimensions,
   Platform,
-} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { Text, View } from '@/components/Themed';
-import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
+} from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import { Text, View } from "@/components/Themed";
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State,
+} from "react-native-gesture-handler";
 import {
   Mic,
   MicOff,
@@ -25,18 +29,18 @@ import {
   Loader,
   Stars,
   Moon,
-} from 'lucide-react-native';
-import Colors from '@/constants/Colors';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+} from "lucide-react-native";
+import Colors from "@/constants/Colors";
+import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
 export default function InterpretScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [dreamText, setDreamText] = useState('');
+  const [dreamText, setDreamText] = useState("");
   const [showTextInput, setShowTextInput] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -44,11 +48,11 @@ export default function InterpretScreen() {
   const recordButtonScale = useRef(new Animated.Value(1)).current;
   const lockIndicatorOpacity = useRef(new Animated.Value(0)).current;
   const slideUpY = useRef(new Animated.Value(0)).current;
-  
+
   // Page transition animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  
+
   // Modern UI animations
   const pulseAnimation = useRef(new Animated.Value(1)).current;
   const glowAnimation = useRef(new Animated.Value(0)).current;
@@ -56,10 +60,10 @@ export default function InterpretScreen() {
   const waveAnimation = useRef(new Animated.Value(0)).current;
   const heroContentScale = useRef(new Animated.Value(0.9)).current;
   const heroBg = useRef(new Animated.Value(0)).current;
-  
+
   // Gesture handler ref
   const panGestureRef = useRef();
-  
+
   // Timer ref
   const timerRef = useRef(null);
 
@@ -101,7 +105,7 @@ export default function InterpretScreen() {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
       // Start ambient animations
       startAmbientAnimations();
 
@@ -114,7 +118,7 @@ export default function InterpretScreen() {
       };
     }, [fadeAnim, scaleAnim, heroContentScale, heroBg])
   );
-  
+
   // Ambient animations for mystical atmosphere
   const startAmbientAnimations = () => {
     // Particle floating animation
@@ -132,7 +136,7 @@ export default function InterpretScreen() {
         }),
       ])
     ).start();
-    
+
     // Gentle wave animation
     Animated.loop(
       Animated.sequence([
@@ -149,11 +153,11 @@ export default function InterpretScreen() {
       ])
     ).start();
   };
-  
+
   const handleRecordStart = () => {
     setIsRecording(true);
     setRecordingTime(0);
-    
+
     // Enhanced button press animation
     Animated.parallel([
       Animated.spring(recordButtonScale, {
@@ -168,7 +172,7 @@ export default function InterpretScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-    
+
     // Show lock indicator with bounce
     Animated.spring(lockIndicatorOpacity, {
       toValue: 1,
@@ -176,7 +180,7 @@ export default function InterpretScreen() {
       friction: 8,
       useNativeDriver: true,
     }).start();
-    
+
     // Start pulsing animation
     Animated.loop(
       Animated.sequence([
@@ -192,28 +196,28 @@ export default function InterpretScreen() {
         }),
       ])
     ).start();
-    
+
     // Enhanced haptic feedback
     Vibration.vibrate([0, 100, 50, 100]);
-    
+
     // Start recording timer
     timerRef.current = setInterval(() => {
-      setRecordingTime(prev => prev + 1);
+      setRecordingTime((prev) => prev + 1);
     }, 1000);
-    
-    console.log('Recording started...');
+
+    console.log("Recording started...");
   };
 
   const handleRecordEnd = () => {
     if (!isLocked) {
       setIsRecording(false);
-      
+
       // Clear timer
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      
+
       // Enhanced reset animations
       Animated.parallel([
         Animated.spring(recordButtonScale, {
@@ -233,22 +237,22 @@ export default function InterpretScreen() {
           useNativeDriver: true,
         }),
       ]).start();
-      
+
       Animated.spring(lockIndicatorOpacity, {
         toValue: 0,
         tension: 100,
         friction: 8,
         useNativeDriver: true,
       }).start();
-      
-      console.log('Recording ended...');
+
+      console.log("Recording ended...");
     }
   };
 
   const handleSlideUpToLock = () => {
     setIsLocked(true);
     Vibration.vibrate([0, 200, 100, 200]);
-    
+
     // Enhanced lock animation
     Animated.parallel([
       Animated.spring(recordButtonScale, {
@@ -270,43 +274,43 @@ export default function InterpretScreen() {
         }),
       ]),
     ]).start();
-    
-    console.log('Recording locked...');
+
+    console.log("Recording locked...");
   };
 
   const handleStopLockedRecording = () => {
     setIsRecording(false);
     setIsLocked(false);
-    
+
     // Clear timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     Animated.timing(lockIndicatorOpacity, {
       toValue: 0,
       duration: 200,
       useNativeDriver: true,
     }).start();
-    
-    console.log('Locked recording stopped...');
+
+    console.log("Locked recording stopped...");
   };
 
   // Pan gesture handler for slide-up-to-lock
-  const handlePanGesture = (event) => {
+  const handlePanGesture = (event: any) => {
     const { translationY, state } = event.nativeEvent;
-    
+
     if (state === State.ACTIVE && isRecording && !isLocked) {
       // Update slide animation based on gesture
       slideUpY.setValue(Math.max(translationY, -100));
-      
+
       // If user slides up more than 80px, trigger lock
       if (translationY < -80) {
         handleSlideUpToLock();
       }
     }
-    
+
     if (state === State.END || state === State.CANCELLED) {
       // Reset slide animation
       Animated.timing(slideUpY, {
@@ -323,77 +327,61 @@ export default function InterpretScreen() {
       // Placeholder for text processing
       setTimeout(() => {
         setIsProcessing(false);
-        Alert.alert('Dream Interpretation', 'Your dream has been processed!');
-        setDreamText('');
+        Alert.alert("Dream Interpretation", "Your dream has been processed!");
+        setDreamText("");
       }, 2000);
     }
   };
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <BlurView intensity={20} tint="light" style={styles.headerCard}>
-        <View style={[styles.headerContent, { backgroundColor: 'transparent' }]}>
-          <View style={styles.iconContainer}>
-            <Moon size={32} color={Colors.underTheMoonlight.midnight} />
-            <Stars size={28} color={Colors.underTheMoonlight.dusk} style={styles.starsIcon} />
-          </View>
-          <Text style={styles.appTitle}>DreamTalk</Text>
-          <Text style={styles.tagline}>Share your dreams, discover their meanings</Text>
-        </View>
-      </BlurView>
+      <View style={[styles.headerContent, { backgroundColor: 'transparent' }]}>
+        <Sparkles size={32} color={Colors.underTheMoonlight.dusk} />
+        <Text style={styles.appTitle}>DreamTalk</Text>
+        <Text style={styles.tagline}>Share your dreams, discover their meanings</Text>
+      </View>
     </View>
   );
 
   const renderTextInput = () => (
     <View style={styles.textInputSection}>
-      <BlurView intensity={15} tint="light" style={styles.toggleCard}>
-        <TouchableOpacity
-          style={styles.toggleButton}
-          onPress={() => setShowTextInput(!showTextInput)}
-        >
-          <Type size={20} color={Colors.underTheMoonlight.midnight} />
-          <Text style={styles.toggleText}>
-            {showTextInput ? 'Hide Text Input' : 'Type Instead'}
-          </Text>
-        </TouchableOpacity>
-      </BlurView>
+      <TouchableOpacity
+        style={styles.toggleButton}
+        onPress={() => setShowTextInput(!showTextInput)}
+      >
+        <Type size={20} color={Colors.underTheMoonlight.dusk} />
+        <Text style={styles.toggleText}>
+          {showTextInput ? 'Hide Text Input' : 'Type Instead'}
+        </Text>
+      </TouchableOpacity>
       
       {showTextInput && (
-        <BlurView intensity={20} tint="light" style={styles.textInputCard}>
-          <View style={styles.textInputContainer}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Describe your dream here..."
-              placeholderTextColor="#666"
-              value={dreamText}
-              onChangeText={setDreamText}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-            <TouchableOpacity
-              style={[
-                styles.sendButton,
-                (!dreamText.trim() || isProcessing) && styles.sendButtonDisabled
-              ]}
-              onPress={handleSendText}
-              disabled={!dreamText.trim() || isProcessing}
-            >
-              <LinearGradient
-                colors={[Colors.underTheMoonlight.midnight, Colors.underTheMoonlight.dusk]}
-                style={styles.sendButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                {isProcessing ? (
-                  <Loader size={20} color="#FFFFFF" />
-                ) : (
-                  <Send size={20} color="#FFFFFF" />
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </BlurView>
+        <View style={styles.textInputContainer}>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Describe your dream here..."
+            placeholderTextColor="#999"
+            value={dreamText}
+            onChangeText={setDreamText}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              (!dreamText.trim() || isProcessing) && styles.sendButtonDisabled
+            ]}
+            onPress={handleSendText}
+            disabled={!dreamText.trim() || isProcessing}
+          >
+            {isProcessing ? (
+              <Loader size={20} color="#FFFFFF" />
+            ) : (
+              <Send size={20} color="#FFFFFF" />
+            )}
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -402,19 +390,17 @@ export default function InterpretScreen() {
     <View style={styles.recordSection}>
       <Text style={styles.recordLabel}>Hold to Record Your Dream</Text>
       
-      {/* Lock indicator with blur */}
+      {/* Lock indicator */}
       <Animated.View
         style={[
           styles.lockIndicator,
           { opacity: lockIndicatorOpacity }
         ]}
       >
-        <BlurView intensity={10} tint="light" style={styles.lockCard}>
-          <ArrowUp size={24} color={Colors.underTheMoonlight.midnight} />
-          <Text style={styles.lockText}>Slide up to lock</Text>
-        </BlurView>
+        <ArrowUp size={24} color={Colors.underTheMoonlight.dusk} />
+        <Text style={styles.lockText}>Slide up to lock</Text>
       </Animated.View>
-      
+
       {/* Hero record button with enhanced design */}
       <View style={styles.recordButtonContainer}>
         <PanGestureHandler
@@ -426,17 +412,20 @@ export default function InterpretScreen() {
           <Animated.View
             style={[
               styles.heroButton,
-              { 
+              {
                 transform: [
                   { scale: recordButtonScale },
-                  { translateY: slideUpY }
-                ] 
-              }
+                  { translateY: slideUpY },
+                ],
+              },
             ]}
           >
             <View style={styles.heroButtonShadow}>
               <LinearGradient
-                colors={[Colors.underTheMoonlight.midnight, Colors.underTheMoonlight.dusk]}
+                colors={[
+                  Colors.underTheMoonlight.midnight,
+                  Colors.underTheMoonlight.dusk,
+                ]}
                 style={styles.heroButtonGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -460,75 +449,60 @@ export default function InterpretScreen() {
             </View>
           </Animated.View>
         </PanGestureHandler>
-        
+
         {/* Stop button for locked recording */}
         {isLocked && (
-          <BlurView intensity={15} tint="light" style={styles.stopButtonCard}>
-            <TouchableOpacity
-              style={styles.stopButton}
-              onPress={handleStopLockedRecording}
-            >
-              <MicOff size={24} color={Colors.underTheMoonlight.midnight} />
-            </TouchableOpacity>
-          </BlurView>
+          <TouchableOpacity
+            style={styles.stopButton}
+            onPress={handleStopLockedRecording}
+          >
+            <MicOff size={24} color={Colors.underTheMoonlight.midnight} />
+          </TouchableOpacity>
         )}
       </View>
       
-      {/* Recording status with glassmorphism */}
+      {/* Recording status */}
       {isRecording && (
-        <BlurView intensity={20} tint="light" style={styles.recordingStatusCard}>
-          <View style={styles.recordingStatus}>
-            <View style={styles.recordingDot} />
-            <Text style={styles.recordingTime}>
-              {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
-            </Text>
-            {isLocked && (
-              <View style={styles.lockedIndicator}>
-                <Lock size={16} color={Colors.underTheMoonlight.midnight} />
-                <Text style={styles.lockedText}>Locked</Text>
-              </View>
-            )}
-          </View>
-        </BlurView>
+        <View style={styles.recordingStatus}>
+          <View style={styles.recordingDot} />
+          <Text style={styles.recordingTime}>
+            {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+          </Text>
+          {isLocked && (
+            <View style={styles.lockedIndicator}>
+              <Lock size={16} color={Colors.underTheMoonlight.dusk} />
+              <Text style={styles.lockedText}>Locked</Text>
+            </View>
+          )}
+        </View>
       )}
     </View>
   );
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <LinearGradient
-        colors={[
-          Colors.underTheMoonlight.moonlight,
-          Colors.underTheMoonlight.twilight,
-          Colors.underTheMoonlight.dusk,
-        ]}
-        style={styles.gradientBackground}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <SafeAreaView style={styles.safeArea}>
-          <Animated.View 
-            style={[
-              styles.animatedContainer,
-              {
-                opacity: fadeAnim,
-                transform: [{ scale: scaleAnim }],
-              }
-            ]}
-          >
-            <View style={styles.topSection}>
-              {renderHeader()}
-              {renderTextInput()}
-            </View>
-            
-            <View style={styles.centerSection}>
-              {renderRecordButton()}
-            </View>
-            
-            <View style={styles.bottomSection} />
-          </Animated.View>
-        </SafeAreaView>
-      </LinearGradient>
+      <SafeAreaView style={styles.container}>
+        <Animated.View 
+          style={[
+            styles.animatedContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ scale: scaleAnim }],
+            }
+          ]}
+        >
+          <View style={styles.topSection}>
+            {renderHeader()}
+            {renderTextInput()}
+          </View>
+          
+          <View style={styles.centerSection}>
+            {renderRecordButton()}
+          </View>
+          
+          <View style={styles.bottomSection} />
+        </Animated.View>
+      </SafeAreaView>
     </GestureHandlerRootView>
   );
 }
@@ -536,12 +510,7 @@ export default function InterpretScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  gradientBackground: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
+    backgroundColor: Colors.underTheMoonlight.moonlight,
   },
   animatedContainer: {
     flex: 1,
@@ -552,8 +521,8 @@ const styles = StyleSheet.create({
   },
   centerSection: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 20,
   },
   bottomSection: {
@@ -563,142 +532,106 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  headerCard: {
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    marginHorizontal: 4,
-    overflow: 'hidden',
-  },
   headerContent: {
     alignItems: 'center',
   },
-  iconContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  starsIcon: {
-    marginLeft: 8,
-  },
   appTitle: {
-    fontSize: 36,
-    fontWeight: '800',
+    fontSize: 32,
+    fontWeight: '700',
     color: Colors.underTheMoonlight.midnight,
-    marginTop: 12,
+    marginTop: 16,
     marginBottom: 8,
-    letterSpacing: -0.5,
   },
   tagline: {
     fontSize: 16,
-    color: Colors.underTheMoonlight.dusk,
+    color: '#666',
     textAlign: 'center',
     lineHeight: 22,
-    fontWeight: '500',
   },
   textInputSection: {
     marginBottom: 16,
   },
-  toggleCard: {
-    borderRadius: 20,
-    marginBottom: 16,
-    overflow: 'hidden',
-    marginHorizontal: 4,
-  },
   toggleButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
     paddingVertical: 16,
+    borderRadius: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
   },
   toggleText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: Colors.underTheMoonlight.midnight,
+    fontWeight: '500',
+    color: Colors.underTheMoonlight.dusk,
     marginLeft: 12,
   },
-  textInputCard: {
-    borderRadius: 24,
-    marginHorizontal: 4,
-    overflow: 'hidden',
-  },
   textInputContainer: {
-    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 8,
   },
   textInput: {
     fontSize: 16,
-    color: Colors.underTheMoonlight.midnight,
+    color: '#333',
     lineHeight: 24,
     minHeight: 100,
-    marginBottom: 20,
-    fontWeight: '500',
+    marginBottom: 16,
   },
   sendButton: {
+    backgroundColor: Colors.underTheMoonlight.midnight,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-end',
-    shadowColor: Colors.underTheMoonlight.midnight,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
   },
   sendButtonDisabled: {
-    opacity: 0.5,
-  },
-  sendButtonGradient: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#CCC',
   },
   recordSection: {
     alignItems: 'center',
   },
   recordLabel: {
-    fontSize: 18,
-    color: Colors.underTheMoonlight.midnight,
-    marginBottom: 24,
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
     textAlign: 'center',
-    fontWeight: '600',
-    letterSpacing: -0.2,
   },
   lockIndicator: {
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  lockCard: {
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflow: 'hidden',
+    marginBottom: 16,
   },
   lockText: {
     fontSize: 14,
-    color: Colors.underTheMoonlight.midnight,
-    marginLeft: 8,
-    fontWeight: '500',
+    color: Colors.underTheMoonlight.dusk,
+    marginTop: 4,
   },
   recordButtonContainer: {
-    alignItems: 'center',
-    position: 'relative',
+    alignItems: "center",
+    position: "relative",
   },
   heroButton: {
     width: 140,
     height: 140,
     borderRadius: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   heroButtonShadow: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 70,
     shadowColor: Colors.underTheMoonlight.midnight,
     shadowOffset: { width: 0, height: 12 },
@@ -707,85 +640,89 @@ const styles = StyleSheet.create({
     elevation: 20,
   },
   heroButtonGradient: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   recordButtonTouch: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 70,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   recordingIndicator: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   recordingPulse: {
-    position: 'absolute',
+    position: "absolute",
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     opacity: 0.2,
   },
-  stopButtonCard: {
-    position: 'absolute',
-    top: -160,
-    borderRadius: 28,
-    overflow: 'hidden',
-  },
   stopButton: {
+    position: 'absolute',
+    top: -140,
+    backgroundColor: '#FFFFFF',
     width: 56,
     height: 56,
+    borderRadius: 28,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  recordingStatusCard: {
-    marginTop: 24,
-    borderRadius: 24,
-    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   recordingStatus: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    marginTop: 20,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   recordingDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#FF5252',
+    backgroundColor: "#FF5252",
     marginRight: 12,
-    shadowColor: '#FF5252',
+    shadowColor: "#FF5252",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
     shadowRadius: 4,
   },
   recordingTime: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.underTheMoonlight.midnight,
-    letterSpacing: -0.3,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
   },
   lockedIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 20,
-    paddingLeft: 20,
-    borderLeftWidth: 1.5,
-    borderLeftColor: Colors.underTheMoonlight.twilight,
+    marginLeft: 16,
+    paddingLeft: 16,
+    borderLeftWidth: 1,
+    borderLeftColor: '#E0E0E0',
   },
   lockedText: {
     fontSize: 14,
-    color: Colors.underTheMoonlight.midnight,
-    marginLeft: 8,
-    fontWeight: '700',
-    letterSpacing: -0.2,
+    color: Colors.underTheMoonlight.dusk,
+    marginLeft: 4,
+    fontWeight: '500',
   },
 });
