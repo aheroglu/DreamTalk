@@ -1,12 +1,93 @@
 import React, { useEffect, useRef } from "react";
 import { Tabs, useRouter, useSegments } from "expo-router";
-import { View, StyleSheet, Platform, Animated, Vibration, TouchableOpacity, Dimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Platform,
+  Animated,
+  Vibration,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import { BookOpen, Mic, User } from "lucide-react-native";
-import { PanGestureHandler, Directions } from "react-native-gesture-handler";
-import * as Haptics from 'expo-haptics';
+import { PanGestureHandler } from "react-native-gesture-handler";
+import * as Haptics from "expo-haptics";
+import * as Device from 'expo-device';
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
+
+// Get screen dimensions
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+// Responsive design helpers
+const getResponsiveValue = (base: number, factor: number = 1) => {
+  // Base for iPhone 11 (414x896)
+  const baseWidth = 414;
+  const scale = screenWidth / baseWidth;
+  return Math.round(base * scale * factor);
+};
+
+// More sophisticated responsive system considering different iPhone models
+const getTabbarResponsiveValues = () => {
+  // Define breakpoints for different iPhone models
+  const isSmallDevice = screenWidth <= 375; // iPhone SE, iPhone 12 mini
+  const isLargeDevice = screenWidth >= 428; // iPhone 14 Pro Max, iPhone 15 Plus
+  
+  // Base values optimized for iPhone 11/12/13 (390-414px width)
+  let baseTabBarHeight = 70;
+  let baseBottom = 40;
+  let baseMarginHorizontal = 30;
+  let baseBorderRadius = 25;
+  let baseIconContainer = 50;
+  let baseIconSize = 24;
+  let baseCTASize = 78;
+  
+  // Adjust for smaller devices
+  if (isSmallDevice) {
+    baseTabBarHeight = 65;
+    baseBottom = 35;
+    baseMarginHorizontal = 25;
+    baseBorderRadius = 22;
+    baseIconContainer = 46;
+    baseIconSize = 22;
+    baseCTASize = 72;
+  }
+  // Adjust for larger devices
+  else if (isLargeDevice) {
+    baseTabBarHeight = 75;
+    baseBottom = 45;
+    baseMarginHorizontal = 35;
+    baseBorderRadius = 28;
+    baseIconContainer = 54;
+    baseIconSize = 26;
+    baseCTASize = 84;
+  }
+  
+  return {
+    // Tabbar dimensions
+    tabBarHeight: baseTabBarHeight,
+    tabBarBottom: baseBottom,
+    tabBarMarginHorizontal: baseMarginHorizontal,
+    tabBarBorderRadius: baseBorderRadius,
+    
+    // Tab icon container
+    iconContainerSize: baseIconContainer,
+    iconSize: baseIconSize,
+    
+    // CTA button
+    ctaContainerSize: baseCTASize,
+    ctaBorderRadius: Math.round(baseCTASize / 2),
+    ctaBorderWidth: isSmallDevice ? 3 : 4,
+    
+    // Glow effects
+    glowOuterSize: baseCTASize + 42,
+    glowMiddleSize: baseCTASize + 27,
+    glowInnerSize: baseCTASize + 17,
+  };
+};
+
+const responsiveStyles = getTabbarResponsiveValues();
 
 // HapticTab component for native haptic feedback
 const HapticTab = ({ children, onPress, ...props }: any) => (
@@ -14,7 +95,7 @@ const HapticTab = ({ children, onPress, ...props }: any) => (
     {...props}
     onPress={(e) => {
       // Native haptic feedback like iOS tabs
-      if (Platform.OS === 'ios') {
+      if (Platform.OS === "ios") {
         Haptics.selectionAsync();
       } else {
         Vibration.vibrate(20);
@@ -23,8 +104,8 @@ const HapticTab = ({ children, onPress, ...props }: any) => (
     }}
     style={{
       flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     }}
   >
     {children}
@@ -37,7 +118,7 @@ const EnhancedHapticTab = ({ children, onPress, ...props }: any) => (
     {...props}
     onPress={(e) => {
       // Enhanced haptic feedback for CTA button
-      if (Platform.OS === 'ios') {
+      if (Platform.OS === "ios") {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       } else {
         Vibration.vibrate(50);
@@ -46,8 +127,8 @@ const EnhancedHapticTab = ({ children, onPress, ...props }: any) => (
     }}
     style={{
       flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     }}
   >
     {children}
@@ -59,7 +140,7 @@ function TabBarIcon({
   icon: Icon,
   color,
   focused,
-  size = 24,
+  size = responsiveStyles.iconSize,
 }: {
   icon: any;
   color: string;
@@ -154,7 +235,7 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
 
       {/* Main CTA button */}
       <View style={[styles.ctaContainer, { backgroundColor: ctaColor }]}>
-        <Mic size={32} color="#FFFFFF" strokeWidth={2.5} />
+        <Mic size={getResponsiveValue(32)} color="#FFFFFF" strokeWidth={2.5} />
       </View>
     </View>
   );
@@ -164,66 +245,67 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const segments = useSegments();
-  
+
   // Tab navigation array for swipe gestures
-  const tabs = ['library', 'interpret', 'profile'];
-  
+  const tabs = ["library", "interpret", "profile"];
+
   // Get current tab index
   const getCurrentTabIndex = () => {
     const currentTab = segments[1]; // Get the tab name from segments
-    const index = tabs.indexOf(currentTab);
+    const index = tabs.indexOf(currentTab || "interpret");
     return index !== -1 ? index : 1; // Default to interpret (index 1)
   };
 
   return (
     <View style={{ flex: 1 }}>
       <Tabs
-          initialRouteName="interpret"
-          screenOptions={{
-            tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
-            tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tabIconDefault,
-            headerShown: false, // Remove all headers
-            tabBarStyle: styles.tabBar,
-            tabBarShowLabel: false,
-            tabBarHideOnKeyboard: Platform.OS === "ios",
-            tabBarItemStyle: {
-              flex: 1,
-              alignItems: "center",
-              justifyContent: "center",
-            },
-            lazy: true,
-            tabBarButton: HapticTab,
+        initialRouteName="interpret"
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
+          tabBarInactiveTintColor:
+            Colors[colorScheme ?? "light"].tabIconDefault,
+          headerShown: false, // Remove all headers
+          tabBarStyle: styles.tabBar,
+          tabBarShowLabel: false,
+          tabBarHideOnKeyboard: Platform.OS === "ios",
+          tabBarItemStyle: {
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          },
+          lazy: true,
+          tabBarButton: HapticTab,
+        }}
+      >
+        <Tabs.Screen
+          name="library"
+          options={{
+            title: "Dream Library",
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon icon={BookOpen} color={color} focused={focused} />
+            ),
           }}
-        >
-          <Tabs.Screen
-            name="library"
-            options={{
-              title: "Dream Library",
-              tabBarIcon: ({ color, focused }) => (
-                <TabBarIcon icon={BookOpen} color={color} focused={focused} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="interpret"
-            options={{
-              title: "Interpret Dream",
-              tabBarIcon: ({ color, focused }) => (
-                <CTATabIcon color={color} focused={focused} />
-              ),
-              tabBarButton: EnhancedHapticTab,
-            }}
-          />
-          <Tabs.Screen
-            name="profile"
-            options={{
-              title: "Profile",
-              tabBarIcon: ({ color, focused }) => (
-                <TabBarIcon icon={User} color={color} focused={focused} />
-              ),
-            }}
-          />
-        </Tabs>
+        />
+        <Tabs.Screen
+          name="interpret"
+          options={{
+            title: "Interpret Dream",
+            tabBarIcon: ({ color, focused }) => (
+              <CTATabIcon color={color} focused={focused} />
+            ),
+            tabBarButton: EnhancedHapticTab,
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon icon={User} color={color} focused={focused} />
+            ),
+          }}
+        />
+      </Tabs>
     </View>
   );
 }
@@ -234,15 +316,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
-    bottom: 40,
+    bottom: responsiveStyles.tabBarBottom,
     left: 0,
     right: 0,
-    marginHorizontal: 30,
+    marginHorizontal: responsiveStyles.tabBarMarginHorizontal,
     backgroundColor: Colors.underTheMoonlight.moonlight,
-    borderRadius: 25,
-    height: 70,
-    paddingTop: 15,
-    paddingHorizontal: 10,
+    borderRadius: responsiveStyles.tabBarBorderRadius,
+    height: responsiveStyles.tabBarHeight,
+    paddingTop: getResponsiveValue(15),
+    paddingHorizontal: getResponsiveValue(10),
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -257,9 +339,9 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: "center",
     justifyContent: "center",
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: responsiveStyles.iconContainerSize,
+    height: responsiveStyles.iconContainerSize,
+    borderRadius: responsiveStyles.iconContainerSize / 2,
   },
   iconContainerFocused: {
     backgroundColor: Colors.underTheMoonlight.dusk,
@@ -271,35 +353,35 @@ const styles = StyleSheet.create({
   ctaContainer: {
     alignItems: "center",
     justifyContent: "center",
-    width: 78,
-    height: 78,
-    borderRadius: 43,
-    borderWidth: 4,
+    width: responsiveStyles.ctaContainerSize,
+    height: responsiveStyles.ctaContainerSize,
+    borderRadius: responsiveStyles.ctaBorderRadius,
+    borderWidth: responsiveStyles.ctaBorderWidth,
     borderColor: Colors.underTheMoonlight.moonlight, // Same as page background
     zIndex: 10,
   },
-  // Glow effect layers for magical appearance - adjusted for 92px button
+  // Glow effect layers for magical appearance - responsive sizing
   glowOuter: {
     position: "absolute",
-    width: 120,
-    height: 120,
-    borderRadius: 65,
+    width: responsiveStyles.glowOuterSize,
+    height: responsiveStyles.glowOuterSize,
+    borderRadius: responsiveStyles.glowOuterSize / 2,
     opacity: 0.15,
     zIndex: 1,
   },
   glowMiddle: {
     position: "absolute",
-    width: 105,
-    height: 105,
-    borderRadius: 57.5,
+    width: responsiveStyles.glowMiddleSize,
+    height: responsiveStyles.glowMiddleSize,
+    borderRadius: responsiveStyles.glowMiddleSize / 2,
     opacity: 0.25,
     zIndex: 2,
   },
   glowInner: {
     position: "absolute",
-    width: 95,
-    height: 95,
-    borderRadius: 52.5,
+    width: responsiveStyles.glowInnerSize,
+    height: responsiveStyles.glowInnerSize,
+    borderRadius: responsiveStyles.glowInnerSize / 2,
     opacity: 0.35,
     zIndex: 3,
   },

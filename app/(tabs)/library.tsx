@@ -10,13 +10,42 @@ import {
   Platform,
   Vibration,
 } from "react-native";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Text, View } from "@/components/Themed";
 import { Search, Star, Moon, Heart } from "lucide-react-native";
-import { PanGestureHandler, Directions, State, GestureHandlerRootView } from "react-native-gesture-handler";
-import * as Haptics from 'expo-haptics';
+import {
+  PanGestureHandler,
+  State,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
+import * as Haptics from "expo-haptics";
 import Colors from "@/constants/Colors";
+
+// Get screen dimensions for responsive design
+const { width: screenWidth } = Dimensions.get('window');
+
+// Responsive design helpers
+const getResponsiveValue = (base: number, factor: number = 1) => {
+  // Base for iPhone 11 (414x896)
+  const baseWidth = 414;
+  const scale = screenWidth / baseWidth;
+  return Math.round(base * scale * factor);
+};
+
+// Calculate bottom spacer based on tabbar size
+const getBottomSpacerHeight = () => {
+  const isSmallDevice = screenWidth <= 375;
+  const isLargeDevice = screenWidth >= 428;
+  
+  if (isSmallDevice) {
+    return 110; // 65 (tabbar) + 35 (bottom) + 10 (extra)
+  } else if (isLargeDevice) {
+    return 130; // 75 (tabbar) + 45 (bottom) + 10 (extra)
+  } else {
+    return 120; // 70 (tabbar) + 40 (bottom) + 10 (extra)
+  }
+};
 
 // Dummy dream symbols data
 const dreamSymbols = [
@@ -90,21 +119,21 @@ export default function LibraryScreen() {
   // Handle tab swipe navigation
   const handleTabSwipe = (event: any) => {
     const { translationX, velocityX, state } = event.nativeEvent;
-    
+
     // Only handle gesture end
     if (state !== State.END) return;
-    
+
     const swipeThreshold = 100;
     const velocityThreshold = 800;
-    
+
     // Only swipe left -> go to interpret (next tab)
-    if ((translationX < -swipeThreshold || velocityX < -velocityThreshold)) {
-      if (Platform.OS === 'ios') {
+    if (translationX < -swipeThreshold || velocityX < -velocityThreshold) {
+      if (Platform.OS === "ios") {
         Haptics.selectionAsync();
       } else {
         Vibration.vibrate(20);
       }
-      router.push('/(tabs)/interpret');
+      router.push("/(tabs)/interpret");
     }
   };
 
@@ -145,14 +174,26 @@ export default function LibraryScreen() {
 
   const renderDreamCard = ({ item }: { item: (typeof dreamSymbols)[0] }) => (
     <TouchableOpacity style={styles.dreamCard}>
-      <View style={[styles.cardHeader, { backgroundColor: 'transparent' }]}>
+      <View style={[styles.cardHeader, { backgroundColor: "transparent" }]}>
         <Text style={styles.symbolEmoji}>{item.symbol}</Text>
-        <View style={[styles.cardTitleContainer, { backgroundColor: 'transparent' }]}>
+        <View
+          style={[
+            styles.cardTitleContainer,
+            { backgroundColor: "transparent" },
+          ]}
+        >
           <Text style={styles.cardTitle}>{item.title}</Text>
           <Text style={styles.cardCategory}>{item.category}</Text>
         </View>
-        <View style={[styles.popularityContainer, { backgroundColor: 'transparent' }]}>
-          <View style={[styles.starsWrapper, { backgroundColor: 'transparent' }]}>
+        <View
+          style={[
+            styles.popularityContainer,
+            { backgroundColor: "transparent" },
+          ]}
+        >
+          <View
+            style={[styles.starsWrapper, { backgroundColor: "transparent" }]}
+          >
             {[...Array(item.popularity)].map((_, i) => (
               <Star
                 key={i}
@@ -193,66 +234,67 @@ export default function LibraryScreen() {
       <SafeAreaView style={styles.container}>
         <PanGestureHandler
           onHandlerStateChange={handleTabSwipe}
-          direction={Directions.LEFT}
           minDist={50}
           shouldCancelWhenOutside={true}
         >
-          <Animated.View 
+          <Animated.View
             style={[
               styles.animatedContainer,
               {
                 opacity: fadeAnim,
                 transform: [{ scale: scaleAnim }],
-              }
+              },
             ]}
           >
-        <ScrollView
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-        >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerTitle}>
-            <Moon size={28} color={Colors.underTheMoonlight.dusk} />
-            <Text style={styles.title}>Dream Library</Text>
-          </View>
-          <Text style={styles.subtitle}>
-            Discover the meanings behind common dream symbols
-          </Text>
-        </View>
+            <ScrollView
+              style={styles.scrollView}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Header */}
+              <View style={styles.header}>
+                <View style={styles.headerTitle}>
+                  <Moon size={28} color={Colors.underTheMoonlight.dusk} />
+                  <Text style={styles.title}>Dream Library</Text>
+                </View>
+                <Text style={styles.subtitle}>
+                  Discover the meanings behind common dream symbols
+                </Text>
+              </View>
 
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Search size={20} color="#999" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search dream symbols..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#999"
-          />
-        </View>
+              {/* Search Bar */}
+              <View style={styles.searchContainer}>
+                <Search size={20} color="#999" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search dream symbols..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholderTextColor="#999"
+                />
+              </View>
 
-        {/* Category Filter */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesContainer}
-        >
-          {categories.map(renderCategoryChip)}
-        </ScrollView>
+              {/* Category Filter */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.categoriesContainer}
+              >
+                {categories.map(renderCategoryChip)}
+              </ScrollView>
 
-        {/* Dream Cards */}
-        <View style={styles.cardsContainer}>
-          <FlatList
-            data={filteredSymbols}
-            renderItem={renderDreamCard}
-            keyExtractor={(item) => item.id}
-            scrollEnabled={false}
-            ItemSeparatorComponent={() => <View style={styles.cardSeparator} />}
-          />
-        </View>
-          </ScrollView>
+              {/* Dream Cards */}
+              <View style={styles.cardsContainer}>
+                <FlatList
+                  data={filteredSymbols}
+                  renderItem={renderDreamCard}
+                  keyExtractor={(item) => item.id}
+                  scrollEnabled={false}
+                  ItemSeparatorComponent={() => (
+                    <View style={styles.cardSeparator} />
+                  )}
+                />
+              </View>
+            </ScrollView>
           </Animated.View>
         </PanGestureHandler>
       </SafeAreaView>

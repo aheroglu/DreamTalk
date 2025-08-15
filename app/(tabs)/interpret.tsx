@@ -18,9 +18,8 @@ import {
   GestureHandlerRootView,
   PanGestureHandler,
   State,
-  Directions,
 } from "react-native-gesture-handler";
-import * as Haptics from 'expo-haptics';
+import * as Haptics from "expo-haptics";
 import {
   Mic,
   MicOff,
@@ -38,6 +37,43 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+
+// Responsive design helpers
+const getResponsiveValue = (base: number, factor: number = 1) => {
+  // Base for iPhone 11 (414x896)
+  const baseWidth = 414;
+  const scale = screenWidth / baseWidth;
+  return Math.round(base * scale * factor);
+};
+
+// More sophisticated responsive system for record button
+const getRecordButtonResponsiveValues = () => {
+  const isSmallDevice = screenWidth <= 375; // iPhone SE, iPhone 12 mini
+  const isLargeDevice = screenWidth >= 428; // iPhone 14 Pro Max, iPhone 15 Plus
+  
+  // Base values optimized for iPhone 11/12/13
+  let baseSize = 140;
+  let baseIconSize = 48;
+  
+  // Adjust for smaller devices
+  if (isSmallDevice) {
+    baseSize = 120;
+    baseIconSize = 42;
+  }
+  // Adjust for larger devices
+  else if (isLargeDevice) {
+    baseSize = 155;
+    baseIconSize = 52;
+  }
+  
+  return {
+    size: baseSize,
+    borderRadius: Math.round(baseSize / 2),
+    iconSize: baseIconSize,
+  };
+};
+
+const responsiveRecordButton = getRecordButtonResponsiveValues();
 
 export default function InterpretScreen() {
   const router = useRouter();
@@ -64,10 +100,6 @@ export default function InterpretScreen() {
   const waveAnimation = useRef(new Animated.Value(0)).current;
   const heroContentScale = useRef(new Animated.Value(0.9)).current;
   const heroBg = useRef(new Animated.Value(0)).current;
-
-  // Gesture handler refs
-  const panGestureRef = useRef();
-  const swipeGestureRef = useRef();
 
   // Timer ref
   const timerRef = useRef(null);
@@ -205,10 +237,6 @@ export default function InterpretScreen() {
     // Enhanced haptic feedback
     Vibration.vibrate([0, 100, 50, 100]);
 
-    // Start recording timer
-    timerRef.current = setInterval(() => {
-      setRecordingTime((prev) => prev + 1);
-    }, 1000);
 
     console.log("Recording started...");
   };
@@ -341,39 +369,41 @@ export default function InterpretScreen() {
   // Handle tab swipe navigation
   const handleTabSwipe = (event: any) => {
     const { translationX, velocityX, state } = event.nativeEvent;
-    
+
     // Only handle gesture end
     if (state !== State.END) return;
-    
+
     const swipeThreshold = 100;
     const velocityThreshold = 800;
-    
+
     // Swipe right -> go to library (previous tab)
-    if ((translationX > swipeThreshold || velocityX > velocityThreshold)) {
-      if (Platform.OS === 'ios') {
+    if (translationX > swipeThreshold || velocityX > velocityThreshold) {
+      if (Platform.OS === "ios") {
         Haptics.selectionAsync();
       } else {
         Vibration.vibrate(20);
       }
-      router.push('/(tabs)/library');
+      router.push("/(tabs)/library");
     }
     // Swipe left -> go to profile (next tab)
-    else if ((translationX < -swipeThreshold || velocityX < -velocityThreshold)) {
-      if (Platform.OS === 'ios') {
+    else if (translationX < -swipeThreshold || velocityX < -velocityThreshold) {
+      if (Platform.OS === "ios") {
         Haptics.selectionAsync();
       } else {
         Vibration.vibrate(20);
       }
-      router.push('/(tabs)/profile');
+      router.push("/(tabs)/profile");
     }
   };
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <View style={[styles.headerContent, { backgroundColor: 'transparent' }]}>
+      <View style={[styles.headerContent, { backgroundColor: "transparent" }]}>
         <Sparkles size={32} color={Colors.underTheMoonlight.dusk} />
         <Text style={styles.appTitle}>DreamTalk</Text>
-        <Text style={styles.tagline}>Share your dreams, discover their meanings</Text>
+        <Text style={styles.tagline}>
+          Share your dreams, discover their meanings
+        </Text>
       </View>
     </View>
   );
@@ -386,10 +416,10 @@ export default function InterpretScreen() {
       >
         <Type size={20} color={Colors.underTheMoonlight.dusk} />
         <Text style={styles.toggleText}>
-          {showTextInput ? 'Hide Text Input' : 'Type Instead'}
+          {showTextInput ? "Hide Text Input" : "Type Instead"}
         </Text>
       </TouchableOpacity>
-      
+
       {showTextInput && (
         <View style={styles.textInputContainer}>
           <TextInput
@@ -405,7 +435,7 @@ export default function InterpretScreen() {
           <TouchableOpacity
             style={[
               styles.sendButton,
-              (!dreamText.trim() || isProcessing) && styles.sendButtonDisabled
+              (!dreamText.trim() || isProcessing) && styles.sendButtonDisabled,
             ]}
             onPress={handleSendText}
             disabled={!dreamText.trim() || isProcessing}
@@ -424,13 +454,10 @@ export default function InterpretScreen() {
   const renderRecordButton = () => (
     <View style={styles.recordSection}>
       <Text style={styles.recordLabel}>Hold to Record Your Dream</Text>
-      
+
       {/* Lock indicator */}
       <Animated.View
-        style={[
-          styles.lockIndicator,
-          { opacity: lockIndicatorOpacity }
-        ]}
+        style={[styles.lockIndicator, { opacity: lockIndicatorOpacity }]}
       >
         <ArrowUp size={24} color={Colors.underTheMoonlight.dusk} />
         <Text style={styles.lockText}>Slide up to lock</Text>
@@ -439,12 +466,9 @@ export default function InterpretScreen() {
       {/* Hero record button with enhanced design */}
       <View style={styles.recordButtonContainer}>
         <PanGestureHandler
-          ref={panGestureRef}
           onGestureEvent={handlePanGesture}
           onHandlerStateChange={handlePanGesture}
           enabled={isRecording && !isLocked}
-          direction={Directions.UP}
-          waitFor={swipeGestureRef}
         >
           <Animated.View
             style={[
@@ -475,11 +499,11 @@ export default function InterpretScreen() {
                 >
                   {isRecording ? (
                     <View style={styles.recordingIndicator}>
-                      <Mic size={48} color="#FFFFFF" strokeWidth={2.5} />
+                      <Mic size={responsiveRecordButton.iconSize} color="#FFFFFF" strokeWidth={2.5} />
                       <View style={styles.recordingPulse} />
                     </View>
                   ) : (
-                    <Mic size={48} color="#FFFFFF" strokeWidth={2.5} />
+                    <Mic size={responsiveRecordButton.iconSize} color="#FFFFFF" strokeWidth={2.5} />
                   )}
                 </TouchableOpacity>
               </LinearGradient>
@@ -497,13 +521,14 @@ export default function InterpretScreen() {
           </TouchableOpacity>
         )}
       </View>
-      
+
       {/* Recording status */}
       {isRecording && (
         <View style={styles.recordingStatus}>
           <View style={styles.recordingDot} />
           <Text style={styles.recordingTime}>
-            {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+            {Math.floor(recordingTime / 60)}:
+            {(recordingTime % 60).toString().padStart(2, "0")}
           </Text>
           {isLocked && (
             <View style={styles.lockedIndicator}>
@@ -520,31 +545,26 @@ export default function InterpretScreen() {
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.container}>
         <PanGestureHandler
-          ref={swipeGestureRef}
           onHandlerStateChange={handleTabSwipe}
-          direction={Directions.LEFT | Directions.RIGHT}
           minDist={50}
           shouldCancelWhenOutside={true}
-          simultaneousHandlers={[panGestureRef]}
         >
-          <Animated.View 
+          <Animated.View
             style={[
               styles.animatedContainer,
               {
                 opacity: fadeAnim,
                 transform: [{ scale: scaleAnim }],
-              }
+              },
             ]}
           >
-          <View style={styles.topSection}>
-            {renderHeader()}
-            {renderTextInput()}
-          </View>
-          
-          <View style={styles.centerSection}>
-            {renderRecordButton()}
-          </View>
-          
+            <View style={styles.topSection}>
+              {renderHeader()}
+              {renderTextInput()}
+            </View>
+
+            <View style={styles.centerSection}>{renderRecordButton()}</View>
+
             <View style={styles.bottomSection} />
           </Animated.View>
         </PanGestureHandler>
@@ -575,37 +595,37 @@ const styles = StyleSheet.create({
     height: 100, // Space for tabbar
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   headerContent: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   appTitle: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
     color: Colors.underTheMoonlight.midnight,
     marginTop: 16,
     marginBottom: 8,
   },
   tagline: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     lineHeight: 22,
   },
   textInputSection: {
     marginBottom: 16,
   },
   toggleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderRadius: 20,
     marginBottom: 16,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -613,15 +633,15 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.underTheMoonlight.dusk,
     marginLeft: 12,
   },
   textInputContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 16,
@@ -629,7 +649,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     lineHeight: 24,
     minHeight: 100,
     marginBottom: 16,
@@ -639,24 +659,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'flex-end',
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "flex-end",
   },
   sendButtonDisabled: {
-    backgroundColor: '#CCC',
+    backgroundColor: "#CCC",
   },
   recordSection: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   recordLabel: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   lockIndicator: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
   },
   lockText: {
@@ -669,16 +689,16 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   heroButton: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: responsiveRecordButton.size,
+    height: responsiveRecordButton.size,
+    borderRadius: responsiveRecordButton.borderRadius,
     alignItems: "center",
     justifyContent: "center",
   },
   heroButtonShadow: {
     width: "100%",
     height: "100%",
-    borderRadius: 70,
+    borderRadius: responsiveRecordButton.borderRadius,
     shadowColor: Colors.underTheMoonlight.midnight,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.4,
@@ -688,14 +708,14 @@ const styles = StyleSheet.create({
   heroButtonGradient: {
     width: "100%",
     height: "100%",
-    borderRadius: 70,
+    borderRadius: responsiveRecordButton.borderRadius,
     alignItems: "center",
     justifyContent: "center",
   },
   recordButtonTouch: {
     width: "100%",
     height: "100%",
-    borderRadius: 70,
+    borderRadius: responsiveRecordButton.borderRadius,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -713,29 +733,29 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
   stopButton: {
-    position: 'absolute',
+    position: "absolute",
     top: -140,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     width: 56,
     height: 56,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
   },
   recordingStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -754,21 +774,21 @@ const styles = StyleSheet.create({
   },
   recordingTime: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
   lockedIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginLeft: 16,
     paddingLeft: 16,
     borderLeftWidth: 1,
-    borderLeftColor: '#E0E0E0',
+    borderLeftColor: "#E0E0E0",
   },
   lockedText: {
     fontSize: 14,
     color: Colors.underTheMoonlight.dusk,
     marginLeft: 4,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
