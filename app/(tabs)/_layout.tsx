@@ -222,10 +222,10 @@ export default function TabLayout() {
           tabBarShowLabel: false,
           tabBarHideOnKeyboard: Platform.OS === "ios",
           tabBarItemStyle: {
-            // Web'deki gibi basit - flex: 1 yeterli
             flex: 1,
             alignItems: "center",
             justifyContent: "center",
+            height: STYLES.tabBar.height, // Sabit yükseklik
           },
           lazy: true,
           tabBarButton: HapticTab,
@@ -266,10 +266,9 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    // Pure CSS flexbox approach
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly", // space-around yerine space-evenly
     alignItems: "center",
     position: "absolute",
     bottom: STYLES.tabBar.bottom,
@@ -301,6 +300,7 @@ const styles = StyleSheet.create({
   ctaWrapper: {
     alignItems: "center",
     justifyContent: "center",
+    minHeight: STYLES.tabBar.height, // Minimum yükseklik garantisi
   },
   ctaContainer: {
     alignItems: "center",
