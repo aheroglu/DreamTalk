@@ -214,7 +214,7 @@ export default function LibraryScreen() {
       <LinearGradient
         colors={[
           Colors.underTheMoonlight.moonlight, // Top: same as current
-          '#F8F8FF' // Bottom: very light lavender/white
+          "#F8F8FF", // Bottom: very light lavender/white
         ]}
         style={styles.container}
       >
@@ -224,63 +224,63 @@ export default function LibraryScreen() {
             minDist={50}
             shouldCancelWhenOutside={true}
           >
-          <Animated.View
-            style={[
-              styles.animatedContainer,
-              {
-                opacity: fadeAnim,
-                transform: [{ scale: scaleAnim }],
-              },
-            ]}
-          >
-            <ScrollView
-              style={styles.scrollView}
-              showsVerticalScrollIndicator={false}
+            <Animated.View
+              style={[
+                styles.animatedContainer,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ scale: scaleAnim }],
+                },
+              ]}
             >
-              {/* Header */}
-              <View style={styles.header}>
-                <View style={styles.headerTitle}>
-                  <Moon size={28} color={Colors.underTheMoonlight.dusk} />
-                  <Text style={styles.title}>Dream Library</Text>
-                </View>
-                <Text style={styles.subtitle}>
-                  Discover the meanings behind common dream symbols
-                </Text>
-              </View>
-
-              {/* Search Bar */}
-              <View style={styles.searchContainer}>
-                <Search size={20} color="#999" style={styles.searchIcon} />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search dream symbols..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholderTextColor="#999"
-                />
-              </View>
-
-              {/* Category Filter */}
               <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.categoriesContainer}
+                style={styles.scrollView}
+                showsVerticalScrollIndicator={false}
               >
-                {categories.map(renderCategoryChip)}
-              </ScrollView>
+                {/* Header */}
+                <View style={styles.header}>
+                  <View style={styles.headerTitle}>
+                    <Moon size={28} color={Colors.underTheMoonlight.dusk} />
+                    <Text style={styles.title}>Dream Library</Text>
+                  </View>
+                  <Text style={styles.subtitle}>
+                    Discover the meanings behind common dream symbols
+                  </Text>
+                </View>
 
-              {/* Dream Cards */}
-              <View style={styles.cardsContainer}>
-                <FlatList
-                  data={filteredSymbols}
-                  renderItem={renderDreamCard}
-                  keyExtractor={(item) => item.id}
-                  scrollEnabled={false}
-                  ItemSeparatorComponent={() => (
-                    <View style={styles.cardSeparator} />
-                  )}
-                />
-              </View>
+                {/* Search Bar */}
+                <View style={styles.searchContainer}>
+                  <Search size={20} color="#999" style={styles.searchIcon} />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search dream symbols..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholderTextColor="#999"
+                  />
+                </View>
+
+                {/* Category Filter */}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.categoriesContainer}
+                >
+                  {categories.map(renderCategoryChip)}
+                </ScrollView>
+
+                {/* Dream Cards */}
+                <View style={styles.cardsContainer}>
+                  <FlatList
+                    data={filteredSymbols}
+                    renderItem={renderDreamCard}
+                    keyExtractor={(item) => item.id}
+                    scrollEnabled={false}
+                    ItemSeparatorComponent={() => (
+                      <View style={styles.cardSeparator} />
+                    )}
+                  />
+                </View>
               </ScrollView>
             </Animated.View>
           </PanGestureHandler>
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   transparentContainer: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   animatedContainer: {
     flex: 1,
@@ -308,11 +308,13 @@ const styles = StyleSheet.create({
   header: {
     paddingTop: 20,
     paddingBottom: 24,
+    backgroundColor: "transparent",
   },
   headerTitle: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
+    backgroundColor: "transparent",
   },
   title: {
     fontSize: 28,
@@ -374,25 +376,23 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   categoryTextActive: {
-    color: "#333",
+    color: "#FFF",
   },
   cardsContainer: {
     paddingBottom: 120, // Space for floating tabbar
+    backgroundColor: "transparent",
   },
   dreamCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
     padding: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
     elevation: 6,
     borderWidth: 0.5,
     borderColor: "rgba(0,0,0,0.04)",
   },
   cardSeparator: {
     height: 16,
+    backgroundColor: "transparent",
   },
   cardHeader: {
     flexDirection: "row",

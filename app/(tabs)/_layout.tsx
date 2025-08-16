@@ -30,15 +30,15 @@ const STYLES = {
     size: 24,
   },
   cta: {
-    size: 78,
+    size: 64,
     borderRadius: 39,
     borderWidth: 4,
     iconSize: 32,
   },
   glow: {
-    outer: 120,
-    middle: 105,
-    inner: 95,
+    outer: 110,
+    middle: 95,
+    inner: 85,
   },
 };
 
@@ -195,12 +195,8 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const router = useRouter();
   const segments = useSegments();
-
-  // Tab navigation array
-  const tabs = ["library", "interpret", "profile"];
 
   // Get current active tab
   const getCurrentTab = () => {
@@ -213,7 +209,7 @@ export default function TabLayout() {
 
   useEffect(() => {
     const currentTab = getCurrentTab();
-    if (currentTab !== 'interpret') {
+    if (currentTab !== "interpret") {
       // Show glow animation when NOT on interpret page
       const pulseAnimation = Animated.loop(
         Animated.sequence([
@@ -230,7 +226,7 @@ export default function TabLayout() {
         ])
       );
       pulseAnimation.start();
-      
+
       return () => pulseAnimation.stop();
     }
   }, [getCurrentTab(), pulseAnim]);
@@ -238,18 +234,20 @@ export default function TabLayout() {
   // STEP 3: Navigation handlers with haptic feedback
   const handleTabPress = (tabName: string) => {
     // Haptic feedback
-    if (Platform.OS === 'ios') {
-      if (tabName === 'interpret') {
+    if (Platform.OS === "ios") {
+      if (tabName === "interpret") {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // CTA feedback
       } else {
         Haptics.selectionAsync(); // Normal tab feedback
       }
     } else {
-      Vibration.vibrate(tabName === 'interpret' ? 50 : 20);
+      Vibration.vibrate(tabName === "interpret" ? 50 : 20);
     }
 
     // Navigate to tab
-    router.push(`/(tabs)/${tabName}`);
+    router.push(
+      tabName as "/(tabs)/library" | "/(tabs)/interpret" | "/(tabs)/profile"
+    );
   };
 
   // STEP 1: Disable Expo Tabs and create skeleton
@@ -271,79 +269,103 @@ export default function TabLayout() {
       </View>
 
       <View style={styles.customTabbarContainer}>
-        
-        <TouchableOpacity 
-          style={[
-            styles.tabButton,
-            getCurrentTab() === 'library' && styles.tabButtonActive
-          ]}
-          onPress={() => handleTabPress('library')}
+        <TouchableOpacity
+          style={styles.tabButton}
+          onPress={() => handleTabPress("library")}
           activeOpacity={0.7}
         >
-          <BookOpen 
-            size={STYLES.icon.size} 
-            color={getCurrentTab() === 'library' ? Colors.underTheMoonlight.moonlight : Colors.underTheMoonlight.dusk} 
-          />
+          <View style={[
+            styles.iconContainer,
+            getCurrentTab() === "library" && styles.iconContainerFocused,
+          ]}>
+            <BookOpen
+              size={STYLES.icon.size}
+              color={
+                getCurrentTab() === "library"
+                  ? Colors.underTheMoonlight.midnight
+                  : Colors.underTheMoonlight.dusk
+              }
+            />
+          </View>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[
             styles.tabButton,
             styles.tabButtonCTA,
-            getCurrentTab() === 'interpret' && styles.tabButtonCTAActive
+            getCurrentTab() === "interpret" && styles.tabButtonCTAActive,
           ]}
-          onPress={() => handleTabPress('interpret')}
+          onPress={() => handleTabPress("interpret")}
           activeOpacity={0.8}
         >
           <View style={styles.ctaWrapper}>
-            <Animated.View style={[
-              styles.glowOuter, 
-              { 
-                backgroundColor: Colors.underTheMoonlight.midnight,
-                transform: [{ scale: pulseAnim }],
-              }
-            ]} />
-            <Animated.View style={[
-              styles.glowMiddle, 
-              { 
-                backgroundColor: Colors.underTheMoonlight.midnight,
-                transform: [{ scale: pulseAnim }],
-              }
-            ]} />
-            <Animated.View style={[
-              styles.glowInner, 
-              { 
-                backgroundColor: Colors.underTheMoonlight.midnight,
-                transform: [{ scale: pulseAnim }],
-              }
-            ]} />
-            
-            <View style={[
-              styles.ctaIconContainer,
-              getCurrentTab() === 'interpret' && styles.ctaIconContainerActive
-            ]}>
+            {getCurrentTab() !== "interpret" && (
+              <>
+                <Animated.View
+                  style={[
+                    styles.glowOuter,
+                    {
+                      backgroundColor: Colors.underTheMoonlight.midnight,
+                      transform: [{ scale: pulseAnim }],
+                    },
+                  ]}
+                />
+                <Animated.View
+                  style={[
+                    styles.glowMiddle,
+                    {
+                      backgroundColor: Colors.underTheMoonlight.midnight,
+                      transform: [{ scale: pulseAnim }],
+                    },
+                  ]}
+                />
+                <Animated.View
+                  style={[
+                    styles.glowInner,
+                    {
+                      backgroundColor: Colors.underTheMoonlight.midnight,
+                      transform: [{ scale: pulseAnim }],
+                    },
+                  ]}
+                />
+              </>
+            )}
+
+            <View
+              style={[
+                styles.ctaIconContainer,
+                getCurrentTab() === "interpret" &&
+                  styles.ctaIconContainerActive,
+              ]}
+            >
               <Mic 
                 size={STYLES.cta.iconSize} 
-                color="#FFFFFF"
+                color={getCurrentTab() === "interpret" ? Colors.underTheMoonlight.dusk : "#FFFFFF"}
+                strokeWidth={2.5}
               />
             </View>
           </View>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[
-            styles.tabButton,
-            getCurrentTab() === 'profile' && styles.tabButtonActive
-          ]}
-          onPress={() => handleTabPress('profile')}
+
+        <TouchableOpacity
+          style={styles.tabButton}
+          onPress={() => handleTabPress("profile")}
           activeOpacity={0.7}
         >
-          <User 
-            size={STYLES.icon.size} 
-            color={getCurrentTab() === 'profile' ? Colors.underTheMoonlight.moonlight : Colors.underTheMoonlight.dusk} 
-          />
+          <View style={[
+            styles.iconContainer,
+            getCurrentTab() === "profile" && styles.iconContainerFocused,
+          ]}>
+            <User
+              size={STYLES.icon.size}
+              color={
+                getCurrentTab() === "profile"
+                  ? Colors.underTheMoonlight.midnight
+                  : Colors.underTheMoonlight.dusk
+              }
+            />
+          </View>
         </TouchableOpacity>
-        
       </View>
     </View>
   );
@@ -380,7 +402,10 @@ const styles = StyleSheet.create({
     borderRadius: STYLES.icon.containerSize / 2,
   },
   iconContainerFocused: {
-    backgroundColor: Colors.underTheMoonlight.dusk,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    width: STYLES.cta.size,
+    height: STYLES.cta.size,
+    borderRadius: STYLES.cta.size / 2,
   },
   ctaWrapper: {
     alignItems: "center",
@@ -422,12 +447,10 @@ const styles = StyleSheet.create({
     zIndex: 3,
   },
 
-  // STEP 4: Production Ready Custom Tabbar  
   customTabbarContainer: {
-    // STEP 2: Perfect CSS Grid Distribution
     display: "flex",
     flexDirection: "row",
-    justifyContent: "space-between", // Even distribution
+    justifyContent: "space-evenly",
     alignItems: "center",
     position: "absolute",
     bottom: STYLES.tabBar.bottom,
@@ -438,7 +461,6 @@ const styles = StyleSheet.create({
     borderRadius: STYLES.tabBar.borderRadius,
     height: STYLES.tabBar.height,
     paddingHorizontal: STYLES.tabBar.paddingHorizontal,
-    // Same shadows as before
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -447,10 +469,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.05)",
   },
-  
-  // STEP 4: Production Ready Tab Button Styles - Clean & Polished
   tabButton: {
-    // Perfect CSS Grid: Each tab = 33.33%
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -458,24 +477,14 @@ const styles = StyleSheet.create({
     borderRadius: STYLES.icon.containerSize / 2,
   },
   tabButtonActive: {
-    // Active state with subtle background
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255,255,255,1)",
   },
   tabButtonCTA: {
-    // CTA button gets no special background - handled by ctaIconContainer
+    // CTA buton için özel stil - boyut değişikliği yok
   },
   tabButtonCTAActive: {
-    // No background change for active CTA - icon container handles it
+    // CTA buton aktif durumu - boyut değişikliği yok
   },
-  
-  // CTA Wrapper for positioning glow effects
-  ctaWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  
-  // CTA Icon Container - Like the old floating CTA design
   ctaIconContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -487,13 +496,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 6,
+    zIndex: 10,
   },
   ctaIconContainerActive: {
-    // More prominent when active
-    backgroundColor: Colors.underTheMoonlight.dusk,
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    backgroundColor: "rgba(255,255,255,1)",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
 });
