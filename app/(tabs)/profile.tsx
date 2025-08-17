@@ -9,10 +9,10 @@ import {
   Animated,
   Platform,
   Vibration,
-  Dimensions,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, View } from "@/components/Themed";
 import {
   PanGestureHandler,
@@ -21,10 +21,6 @@ import {
 } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
-
-// Web-style constants - fixed values only
-const BOTTOM_SPACER_HEIGHT = 120;
-
 import {
   User,
   Settings,
@@ -40,7 +36,27 @@ import {
 } from "lucide-react-native";
 import Colors from "@/constants/Colors";
 
-// MVP Profile Data (will be replaced with Supabase data)
+// Modern CSS Grid approach - Fixed, simple values
+const LAYOUT = {
+  container: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  spacing: {
+    section: 24,
+    element: 16,
+    card: 12,
+  },
+  card: {
+    borderRadius: 16,
+    padding: 20,
+  },
+  avatar: {
+    size: 72,
+  },
+};
+
+// Profile data structure
 const profileData = {
   isAuthenticated: false,
   user: {
@@ -62,71 +78,44 @@ const profileData = {
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [settings, setSettings] = useState(profileData.settings);
   const [isAuthenticated, setIsAuthenticated] = useState(
     profileData.isAuthenticated
   );
 
-  // Page transition animations
+  // Simple animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
-  // Handle tab swipe navigation
+  // Simple page focus animation
+  useFocusEffect(
+    React.useCallback(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+
+      return () => {
+        fadeAnim.setValue(0);
+      };
+    }, [fadeAnim])
+  );
+
+  // Tab swipe navigation - only right swipe (to interpret)
   const handleTabSwipe = (event: any) => {
-    const { translationX, velocityX, state } = event.nativeEvent;
+    const { translationX, state } = event.nativeEvent;
 
-    // Only handle gesture end
     if (state !== State.END) return;
 
     const swipeThreshold = 100;
-    const velocityThreshold = 800;
 
-    // Only swipe right -> go to interpret (previous tab)
-    if (translationX > swipeThreshold || velocityX > velocityThreshold) {
+    if (translationX > swipeThreshold) {
       if (Platform.OS === "ios") {
         Haptics.selectionAsync();
-      } else {
-        Vibration.vibrate(20);
       }
       router.push("/(tabs)/interpret");
     }
-  };
-
-  // Page focus animation
-  useFocusEffect(
-    React.useCallback(() => {
-      // Animate in when page comes into focus
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 120,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // Reset animations when page loses focus
-      return () => {
-        fadeAnim.setValue(0);
-        scaleAnim.setValue(0.95);
-      };
-    }, [fadeAnim, scaleAnim])
-  );
-
-  const handleSignIn = () => {
-    Alert.alert(
-      "Sign In",
-      "Connect your account to sync dreams across devices and unlock premium features.",
-      [
-        { text: "Later", style: "cancel" },
-        { text: "Sign In", onPress: () => console.log("Sign in pressed") },
-      ]
-    );
   };
 
   const handleDeleteData = () => {
@@ -144,232 +133,214 @@ export default function ProfileScreen() {
     );
   };
 
-  const renderProfileCard = () => (
-    <View style={[styles.profileCard, { backgroundColor: "transparent" }]}>
-      <View style={styles.avatarContainer}>
-        <View style={styles.avatarBackground}>
-          <Moon size={32} color={Colors.underTheMoonlight.moonlight} />
-        </View>
-      </View>
-      <View style={[styles.profileInfo, { backgroundColor: "transparent" }]}>
-        <Text style={styles.profileName}>
-          {isAuthenticated ? profileData.user.name : "Anonymous Dreamer"}
-        </Text>
-        <Text style={styles.profileStatus}>
-          {isAuthenticated
-            ? profileData.user.email
-            : "Sign in to sync your dreams"}
-        </Text>
-      </View>
-      {!isAuthenticated && (
-        <TouchableOpacity style={styles.signInButton} onPress={handleSignIn}>
-          <Text style={styles.signInText}>Sign In</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-
-  const renderDreamStats = () => (
-    <View style={[styles.sectionContainer, { backgroundColor: "transparent" }]}>
-      <View style={[styles.sectionHeader, { backgroundColor: "transparent" }]}>
-        <Sparkles size={20} color={Colors.underTheMoonlight.dusk} />
-        <Text style={styles.sectionTitle}>Dream Journey</Text>
-      </View>
-
-      <View style={styles.statsGrid}>
-        <View style={styles.statCard}>
-          <BarChart3 size={24} color={Colors.underTheMoonlight.midnight} />
-          <Text style={styles.statNumber}>
-            {profileData.dreamStats.totalDreams}
-          </Text>
-          <Text style={styles.statLabel}>Total Dreams</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <Calendar size={24} color={Colors.underTheMoonlight.midnight} />
-          <Text style={styles.statNumber}>
-            {profileData.dreamStats.thisMonth}
-          </Text>
-          <Text style={styles.statLabel}>This Month</Text>
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderSettingsSection = () => (
-    <View style={[styles.sectionContainer, { backgroundColor: "transparent" }]}>
-      <View style={[styles.sectionHeader, { backgroundColor: "transparent" }]}>
-        <Settings size={20} color={Colors.underTheMoonlight.dusk} />
-        <Text style={styles.sectionTitle}>Settings</Text>
-      </View>
-
-      <View style={styles.settingsContainer}>
-        {/* Notifications */}
-        <View style={styles.settingCard}>
-          <View
-            style={[styles.settingLeft, { backgroundColor: "transparent" }]}
-          >
-            <Bell size={20} color={Colors.underTheMoonlight.dusk} />
-            <View
-              style={[styles.settingText, { backgroundColor: "transparent" }]}
-            >
-              <Text style={styles.settingTitle}>Dream Reminders</Text>
-              <Text style={styles.settingSubtitle}>
-                Get gentle reminders to record your dreams
-              </Text>
-            </View>
-          </View>
-          <Switch
-            value={settings.notifications}
-            onValueChange={(value) =>
-              setSettings({ ...settings, notifications: value })
-            }
-            trackColor={{
-              false: "#E0E0E0",
-              true: Colors.underTheMoonlight.dusk,
-            }}
-            thumbColor={
-              settings.notifications
-                ? Colors.underTheMoonlight.moonlight
-                : "#F0F0F0"
-            }
-          />
-        </View>
-
-        {/* Privacy Mode */}
-        <View style={styles.settingCard}>
-          <View
-            style={[styles.settingLeft, { backgroundColor: "transparent" }]}
-          >
-            <Shield size={20} color={Colors.underTheMoonlight.dusk} />
-            <View
-              style={[styles.settingText, { backgroundColor: "transparent" }]}
-            >
-              <Text style={styles.settingTitle}>Privacy Mode</Text>
-              <Text style={styles.settingSubtitle}>
-                Keep dreams local, no cloud sync
-              </Text>
-            </View>
-          </View>
-          <Switch
-            value={settings.privacyMode}
-            onValueChange={(value) =>
-              setSettings({ ...settings, privacyMode: value })
-            }
-            trackColor={{
-              false: "#E0E0E0",
-              true: Colors.underTheMoonlight.dusk,
-            }}
-            thumbColor={
-              settings.privacyMode
-                ? Colors.underTheMoonlight.moonlight
-                : "#F0F0F0"
-            }
-          />
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderDataSection = () => (
-    <View style={[styles.sectionContainer, { backgroundColor: "transparent" }]}>
-      <View style={[styles.sectionHeader, { backgroundColor: "transparent" }]}>
-        <Shield size={20} color={Colors.underTheMoonlight.dusk} />
-        <Text style={styles.sectionTitle}>Your Data</Text>
-      </View>
-
-      <View style={styles.settingsList}>
-        {/* Delete Data - Last item, remove border */}
-        <TouchableOpacity
-          style={[styles.settingItem, { borderBottomWidth: 0 }]}
-          onPress={handleDeleteData}
-        >
-          <View
-            style={[styles.settingLeft, { backgroundColor: "transparent" }]}
-          >
-            <Trash2 size={20} color="#E53E3E" />
-            <View
-              style={[styles.settingText, { backgroundColor: "transparent" }]}
-            >
-              <Text style={[styles.settingTitle, { color: "#E53E3E" }]}>
-                Delete All Data
-              </Text>
-              <Text style={styles.settingSubtitle}>
-                Permanently remove all dreams
-              </Text>
-            </View>
-          </View>
-          <ChevronRight size={20} color="#999" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const handleSignOut = () => {
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: () => setIsAuthenticated(false),
+      },
+    ]);
+  };
 
   return (
     <GestureHandlerRootView style={styles.container}>
       <LinearGradient
-        colors={[
-          Colors.underTheMoonlight.moonlight, // Top: same as current
-          '#F8F8FF' // Bottom: very light lavender/white
-        ]}
+        colors={[Colors.underTheMoonlight.moonlight, "#F8F8FF"]}
         style={styles.container}
       >
-        <SafeAreaView style={styles.transparentContainer}>
+        <SafeAreaView style={styles.safeArea}>
           <PanGestureHandler
             onHandlerStateChange={handleTabSwipe}
             minDist={50}
             shouldCancelWhenOutside={true}
           >
-          <Animated.View
-            style={[
-              styles.animatedContainer,
-              {
-                opacity: fadeAnim,
-                transform: [{ scale: scaleAnim }],
-              },
-            ]}
-          >
-            <ScrollView
-              style={styles.scrollView}
-              showsVerticalScrollIndicator={false}
-            >
-              {/* Header */}
-              <View style={styles.header}>
-                <View
-                  style={[
-                    styles.headerTitle,
-                    { backgroundColor: "transparent" },
-                  ]}
-                >
-                  <User size={28} color={Colors.underTheMoonlight.dusk} />
-                  <Text style={styles.title}>Profile</Text>
+            <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+              {/* Scrollable Content with Header Inside */}
+              <ScrollView
+                style={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContainer}
+              >
+                {/* Header Section */}
+                <View style={styles.headerSection}>
+                  <View style={styles.headerContent}>
+                    <User size={28} color={Colors.underTheMoonlight.dusk} />
+                    <Text style={styles.title}>Profile</Text>
+                    <Text style={styles.subtitle}>
+                      Manage your dream journey and preferences
+                    </Text>
+                  </View>
                 </View>
-                <Text style={styles.subtitle}>
-                  Manage your dream journey and preferences
-                </Text>
-              </View>
+                {/* Profile Card */}
+                <View style={styles.profileCard}>
+                  <View style={styles.avatarContainer}>
+                    <View style={styles.avatar}>
+                      <Moon
+                        size={32}
+                        color={Colors.underTheMoonlight.moonlight}
+                      />
+                    </View>
+                  </View>
 
-              {/* Profile Card */}
-              {renderProfileCard()}
+                  <View style={styles.profileInfo}>
+                    <Text style={styles.profileName}>
+                      {isAuthenticated
+                        ? profileData.user.name
+                        : "Anonymous Dreamer"}
+                    </Text>
+                    <Text style={styles.profileStatus}>
+                      {isAuthenticated
+                        ? profileData.user.email
+                        : "Sign in to sync your dreams"}
+                    </Text>
+                  </View>
+                </View>
 
-              {/* Dream Statistics */}
-              {renderDreamStats()}
+                {/* Dream Stats */}
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Sparkles size={20} color={Colors.underTheMoonlight.dusk} />
+                    <Text style={styles.sectionTitle}>Dream Journey</Text>
+                  </View>
 
-              {/* Settings */}
-              {renderSettingsSection()}
+                  <View style={styles.statsGrid}>
+                    <View style={styles.statCard}>
+                      <BarChart3
+                        size={24}
+                        color={Colors.underTheMoonlight.midnight}
+                      />
+                      <Text style={styles.statNumber}>
+                        {profileData.dreamStats.totalDreams}
+                      </Text>
+                      <Text style={styles.statLabel}>Total Dreams</Text>
+                    </View>
 
-              {/* Data Management */}
-              {renderDataSection()}
+                    <View style={styles.statCard}>
+                      <Calendar
+                        size={24}
+                        color={Colors.underTheMoonlight.midnight}
+                      />
+                      <Text style={styles.statNumber}>
+                        {profileData.dreamStats.thisMonth}
+                      </Text>
+                      <Text style={styles.statLabel}>This Month</Text>
+                    </View>
+                  </View>
+                </View>
 
-              {/* Sign Out (if authenticated) */}
-              {isAuthenticated && (
-                <TouchableOpacity style={styles.signOutButton}>
+                {/* Settings */}
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Settings size={20} color={Colors.underTheMoonlight.dusk} />
+                    <Text style={styles.sectionTitle}>Settings</Text>
+                  </View>
+
+                  <View style={styles.settingsContainer}>
+                    {/* Notifications */}
+                    <View style={styles.settingCard}>
+                      <View style={styles.settingLeft}>
+                        <Bell size={20} color={Colors.underTheMoonlight.dusk} />
+                        <View style={styles.settingText}>
+                          <Text style={styles.settingTitle}>
+                            Dream Reminders
+                          </Text>
+                          <Text style={styles.settingSubtitle}>
+                            Get gentle reminders to record your dreams
+                          </Text>
+                        </View>
+                      </View>
+                      <Switch
+                        value={settings.notifications}
+                        onValueChange={(value) =>
+                          setSettings({ ...settings, notifications: value })
+                        }
+                        trackColor={{
+                          false: "#E0E0E0",
+                          true: Colors.underTheMoonlight.dusk,
+                        }}
+                        thumbColor={
+                          settings.notifications
+                            ? Colors.underTheMoonlight.moonlight
+                            : "#F0F0F0"
+                        }
+                      />
+                    </View>
+
+                    {/* Privacy Mode */}
+                    <View style={styles.settingCard}>
+                      <View style={styles.settingLeft}>
+                        <Shield
+                          size={20}
+                          color={Colors.underTheMoonlight.dusk}
+                        />
+                        <View style={styles.settingText}>
+                          <Text style={styles.settingTitle}>Privacy Mode</Text>
+                          <Text style={styles.settingSubtitle}>
+                            Keep dreams local, no cloud sync
+                          </Text>
+                        </View>
+                      </View>
+                      <Switch
+                        value={settings.privacyMode}
+                        onValueChange={(value) =>
+                          setSettings({ ...settings, privacyMode: value })
+                        }
+                        trackColor={{
+                          false: "#E0E0E0",
+                          true: Colors.underTheMoonlight.dusk,
+                        }}
+                        thumbColor={
+                          settings.privacyMode
+                            ? Colors.underTheMoonlight.moonlight
+                            : "#F0F0F0"
+                        }
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                {/* Data Management */}
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Shield size={20} color={Colors.underTheMoonlight.dusk} />
+                    <Text style={styles.sectionTitle}>Your Data</Text>
+                  </View>
+
+                  <View style={styles.dataContainer}>
+                    <TouchableOpacity
+                      style={styles.dataAction}
+                      onPress={handleDeleteData}
+                    >
+                      <View style={styles.settingLeft}>
+                        <Trash2 size={20} color="#E53E3E" />
+                        <View style={styles.settingText}>
+                          <Text
+                            style={[styles.settingTitle, { color: "#E53E3E" }]}
+                          >
+                            Delete All Data
+                          </Text>
+                          <Text style={styles.settingSubtitle}>
+                            Permanently remove all dreams
+                          </Text>
+                        </View>
+                      </View>
+                      <ChevronRight size={20} color="#999" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.signOutButton}
+                  onPress={handleSignOut}
+                >
                   <LogOut size={20} color="#E53E3E" />
                   <Text style={styles.signOutText}>Sign Out</Text>
                 </TouchableOpacity>
-              )}
 
-              <View style={styles.bottomSpacer} />
+                {/* Bottom Spacer */}
+                <View style={[styles.bottomSpacer, { height: 100 + insets.bottom }]} />
               </ScrollView>
             </Animated.View>
           </PanGestureHandler>
@@ -383,71 +354,76 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  transparentContainer: {
+  safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
-  animatedContainer: {
+  content: {
     flex: 1,
   },
-  scrollView: {
+
+  // Scrollable Content - CSS Grid: Flex 1
+  scrollContent: {
     flex: 1,
-    paddingHorizontal: 20,
   },
-  header: {
-    paddingTop: 20,
-    paddingBottom: 24,
+  scrollContainer: {
+    paddingHorizontal: LAYOUT.container.paddingHorizontal,
+    gap: LAYOUT.spacing.section,
   },
-  headerTitle: {
-    flexDirection: "row",
+
+  // Header Section - Inside ScrollView
+  headerSection: {
+    paddingTop: LAYOUT.container.paddingTop,
+    paddingBottom: LAYOUT.spacing.element,
+    backgroundColor: "transparent",
+  },
+  headerContent: {
     alignItems: "center",
-    marginBottom: 8,
+    backgroundColor: "transparent",
+    gap: 8,
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#333",
-    marginLeft: 12,
+    color: Colors.underTheMoonlight.midnight,
   },
   subtitle: {
     fontSize: 16,
     color: "#666",
-    marginLeft: 40,
+    textAlign: "center",
+    lineHeight: 22,
   },
+
+  // Profile Card
   profileCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
-    borderWidth: 0.5,
-    borderColor: "rgba(0,0,0,0.04)",
+    backgroundColor: "transparent",
+    borderRadius: LAYOUT.card.borderRadius,
+    padding: LAYOUT.card.padding,
+    alignItems: "center",
+    gap: LAYOUT.spacing.element,
   },
   avatarContainer: {
     alignItems: "center",
-    marginBottom: 16,
+    backgroundColor: "transparent",
   },
-  avatarBackground: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  avatar: {
+    width: LAYOUT.avatar.size,
+    height: LAYOUT.avatar.size,
+    borderRadius: LAYOUT.avatar.size / 2,
     backgroundColor: Colors.underTheMoonlight.dusk,
     alignItems: "center",
     justifyContent: "center",
   },
   profileInfo: {
     alignItems: "center",
-    marginBottom: 16,
+    gap: 4,
+    backgroundColor: "transparent",
   },
   profileName: {
-    fontSize: 22,
+    backgroundColor: "transparent",
+    fontSize: 20,
     fontWeight: "600",
     color: "#333",
-    marginBottom: 4,
   },
   profileStatus: {
     fontSize: 14,
@@ -458,136 +434,150 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.underTheMoonlight.midnight,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 20,
-    alignSelf: "center",
+    borderRadius: 16,
   },
   signInText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
   },
-  sectionContainer: {
-    marginBottom: 24,
+
+  // Sections
+  section: {
+    gap: LAYOUT.spacing.element,
+    backgroundColor: "transparent",
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
+    backgroundColor: "transparent",
+    gap: 8,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "600",
     color: "#333",
-    marginLeft: 8,
   },
+
+  // Stats Grid
   statsGrid: {
     flexDirection: "row",
-    gap: 12,
+    gap: LAYOUT.spacing.card,
+    backgroundColor: "transparent",
   },
   statCard: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
+    borderRadius: LAYOUT.card.borderRadius,
+    padding: LAYOUT.card.padding,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 3,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   statNumber: {
     fontSize: 24,
     fontWeight: "700",
     color: "#333",
-    marginTop: 8,
-    marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
     color: "#666",
     textAlign: "center",
   },
+
+  // Settings
   settingsContainer: {
-    gap: 12,
+    gap: LAYOUT.spacing.card,
+    backgroundColor: "transparent",
   },
   settingCard: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
-    borderWidth: 0.5,
-    borderColor: "rgba(0,0,0,0.04)",
-  },
-  settingsList: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
-    borderWidth: 0.5,
-    borderColor: "rgba(0,0,0,0.04)",
-  },
-  settingItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingVertical: 18,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "rgba(0,0,0,0.08)",
-  },
-  settingLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  settingText: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  settingTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#333",
-    marginBottom: 2,
-  },
-  settingSubtitle: {
-    fontSize: 13,
-    color: "#666",
-  },
-  signOutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    paddingVertical: 16,
-    marginTop: 8,
-    marginBottom: 24,
+    backgroundColor: "#FFF",
+    borderRadius: LAYOUT.card.borderRadius,
+    padding: LAYOUT.card.padding,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
+  settingLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: 16,
+    backgroundColor: "transparent",
+  },
+  settingText: {
+    flex: 1,
+    gap: 2,
+    backgroundColor: "transparent",
+  },
+  settingTitle: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#333",
+  },
+  settingSubtitle: {
+    fontSize: 13,
+    color: "#666",
+  },
+
+  // Data Management
+  dataContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
+    borderRadius: LAYOUT.card.borderRadius,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
+  dataAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: LAYOUT.card.padding,
+  },
+
+  // Sign Out
+  signOutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
+    borderRadius: LAYOUT.card.borderRadius,
+    paddingVertical: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   signOutText: {
     color: "#E53E3E",
     fontSize: 16,
     fontWeight: "500",
-    marginLeft: 8,
   },
+
+  // Bottom Spacer - CSS Grid: Fixed height for tabbar
   bottomSpacer: {
-    height: BOTTOM_SPACER_HEIGHT, // Web'deki gibi sabit
+    backgroundColor: "transparent",
+    height: 100,
   },
 });

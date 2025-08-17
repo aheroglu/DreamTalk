@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text, View } from "@/components/Themed";
 import { Search, Star, Moon, Heart } from "lucide-react-native";
 import {
@@ -89,6 +90,7 @@ const categories = ["All", "Nature", "Animals", "Objects"];
 
 export default function LibraryScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -239,13 +241,13 @@ export default function LibraryScreen() {
               >
                 {/* Header */}
                 <View style={styles.header}>
-                  <View style={styles.headerTitle}>
+                  <View style={styles.headerContent}>
                     <Moon size={28} color={Colors.underTheMoonlight.dusk} />
                     <Text style={styles.title}>Dream Library</Text>
+                    <Text style={styles.subtitle}>
+                      Discover the meanings behind common dream symbols
+                    </Text>
                   </View>
-                  <Text style={styles.subtitle}>
-                    Discover the meanings behind common dream symbols
-                  </Text>
                 </View>
 
                 {/* Search Bar */}
@@ -270,7 +272,7 @@ export default function LibraryScreen() {
                 </ScrollView>
 
                 {/* Dream Cards */}
-                <View style={styles.cardsContainer}>
+                <View style={[styles.cardsContainer, { paddingBottom: 120 + insets.bottom }]}>
                   <FlatList
                     data={filteredSymbols}
                     renderItem={renderDreamCard}
@@ -309,23 +311,25 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 24,
     backgroundColor: "transparent",
-  },
-  headerTitle: {
-    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+  },
+  headerContent: {
+    alignItems: "center",
     backgroundColor: "transparent",
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
     color: "#333",
-    marginLeft: 12,
+    marginTop: 8,
+    marginBottom: 8,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
     color: "#666",
-    marginLeft: 40,
+    textAlign: "center",
+    paddingHorizontal: 20,
   },
   searchContainer: {
     flexDirection: "row",

@@ -13,6 +13,7 @@ import {
 import { BookOpen, Mic, User } from "lucide-react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
 
@@ -197,6 +198,7 @@ function CTATabIcon({ color, focused }: { color: string; focused: boolean }) {
 export default function TabLayout() {
   const router = useRouter();
   const segments = useSegments();
+  const insets = useSafeAreaInsets();
 
   // Get current active tab
   const getCurrentTab = () => {
@@ -268,7 +270,7 @@ export default function TabLayout() {
         </Tabs>
       </View>
 
-      <View style={styles.customTabbarContainer}>
+      <View style={[styles.customTabbarContainer, { bottom: Math.max(insets.bottom, 20) + 20 }]}>
         <TouchableOpacity
           style={styles.tabButton}
           onPress={() => handleTabPress("library")}
