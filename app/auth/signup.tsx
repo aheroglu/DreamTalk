@@ -9,7 +9,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Text, View } from "@/components/Themed";
 import { LinearGradient } from "expo-linear-gradient";
 import { Moon, Mail, Lock, Eye, EyeOff, User, Loader } from "lucide-react-native";
@@ -49,28 +49,43 @@ export default function SignUpScreen() {
   }, []);
 
   const validateForm = () => {
+    // Display name validation
     if (!displayName.trim()) {
-      Alert.alert("Error", "Please enter your display name");
+      Alert.alert("Hata", "Lütfen adınızı girin");
       return false;
     }
     
+    if (displayName.trim().length < 2) {
+      Alert.alert("Hata", "Ad en az 2 karakter olmalıdır");
+      return false;
+    }
+    
+    // Email validation
     if (!email.trim()) {
-      Alert.alert("Error", "Please enter your email address");
+      Alert.alert("Hata", "Lütfen email adresinizi girin");
       return false;
     }
     
-    if (!email.includes("@")) {
-      Alert.alert("Error", "Please enter a valid email address");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert("Hata", "Geçerli bir email adresi girin");
       return false;
     }
     
+    // Password validation
     if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters long");
+      Alert.alert("Hata", "Şifre en az 6 karakter olmalıdır");
+      return false;
+    }
+
+    // Password strength validation
+    if (!/(?=.*[a-z])(?=.*[A-Z])/.test(password)) {
+      Alert.alert("Hata", "Şifre en az bir büyük ve bir küçük harf içermelidir");
       return false;
     }
     
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert("Hata", "Şifreler eşleşmiyor");
       return false;
     }
     
@@ -86,7 +101,7 @@ export default function SignUpScreen() {
       await signUp(email.trim(), password, displayName.trim());
       
       if (Platform.OS === "ios") {
-        Haptics.successImpactAsync();
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
       
       Alert.alert(
@@ -104,7 +119,7 @@ export default function SignUpScreen() {
       Alert.alert("Sign Up Failed", error.message || "Please try again.");
       
       if (Platform.OS === "ios") {
-        Haptics.errorImpactAsync();
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       }
     } finally {
       setLoading(false);
@@ -119,7 +134,7 @@ export default function SignUpScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <LinearGradient
         colors={[Colors.underTheMoonlight.moonlight, "#F8F8FF"]}
         style={styles.container}
@@ -265,7 +280,7 @@ export default function SignUpScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -284,6 +299,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   header: {
+    backgroundColor: "transparent",
     alignItems: "center",
     marginBottom: 40,
   },
@@ -315,6 +331,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   form: {
+    backgroundColor: "transparent",
     marginBottom: 32,
   },
   inputContainer: {
@@ -332,6 +349,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   inputIcon: {
+    backgroundColor: "transparent",
     marginRight: 12,
   },
   input: {
@@ -369,6 +387,7 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",
     justifyContent: "center",
+    backgroundColor: "transparent",
     alignItems: "center",
   },
   footerText: {

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -9,7 +9,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import { Text, View } from "@/components/Themed";
 import { LinearGradient } from "expo-linear-gradient";
 import { Moon, Mail, Lock, Eye, EyeOff, Loader } from "lucide-react-native";
@@ -26,11 +26,14 @@ export default function SignInScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
+  // Modern entrance animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
-  React.useEffect(() => {
+  useEffect(() => {
+    // Staggered entrance animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -39,15 +42,29 @@ export default function SignInScreen() {
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 600,
+        duration: 500,
         useNativeDriver: true,
       }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 80,
+        friction: 8,
+        useNativeDriver: true,
+      })
     ]).start();
   }, []);
 
   const handleSignIn = async () => {
+    // Form validation
     if (!email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert("Hata", "Lütfen tüm alanları doldurun");
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert("Hata", "Geçerli bir email adresi girin");
       return;
     }
 
@@ -56,18 +73,34 @@ export default function SignInScreen() {
     try {
       await signIn(email.trim(), password);
       
+      // Success haptic feedback
       if (Platform.OS === "ios") {
-        Haptics.successImpactAsync();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       
       // Navigate to main app
       router.replace("/(tabs)/interpret");
     } catch (error: any) {
       console.error("Sign in error:", error);
-      Alert.alert("Sign In Failed", error.message || "Please check your credentials and try again.");
       
+      // User-friendly error messages
+      let errorMessage = "Bir hata oluştu. Lütfen tekrar deneyin.";
+      
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Email veya şifre hatalı. Lütfen kontrol edin.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Email adresinizi onaylamanız gerekiyor. Lütfen email kutunuzu kontrol edin.";
+      } else if (error.message?.includes('Too many requests')) {
+        errorMessage = "Çok fazla deneme yapıldı. Lütfen biraz bekleyin.";
+      } else if (error.message?.includes('Network')) {
+        errorMessage = "İnternet bağlantınızı kontrol edin.";
+      }
+      
+      Alert.alert("Giriş Başarısız", errorMessage);
+      
+      // Error haptic feedback
       if (Platform.OS === "ios") {
-        Haptics.errorImpactAsync();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     } finally {
       setLoading(false);
@@ -82,7 +115,7 @@ export default function SignInScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <LinearGradient
         colors={[Colors.underTheMoonlight.moonlight, "#F8F8FF"]}
         style={styles.container}
@@ -190,7 +223,7 @@ export default function SignInScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -210,6 +243,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
+    backgroundColor: "transparent",
     marginBottom: 48,
   },
   logoContainer: {
@@ -240,6 +274,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   form: {
+    backgroundColor: "transparent",
     marginBottom: 32,
   },
   inputContainer: {
@@ -257,6 +292,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   inputIcon: {
+    backgroundColor: "transparent",
     marginRight: 12,
   },
   input: {
@@ -303,6 +339,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: "row",
+    backgroundColor: "transparent",
     justifyContent: "center",
     alignItems: "center",
   },

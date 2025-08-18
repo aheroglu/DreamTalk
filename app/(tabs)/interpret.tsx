@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
-  SafeAreaView,
+
   TextInput,
   Animated,
   TouchableOpacity,
@@ -36,7 +36,7 @@ import { LinearGradient } from "expo-linear-gradient";
 const LAYOUT = {
   container: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 10, // Reduced from 20 to 10
   },
   header: {
     marginBottom: 32,
@@ -67,7 +67,7 @@ export default function InterpretScreen() {
   const lockIndicatorOpacity = useRef(new Animated.Value(0)).current;
 
   // Timer
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<number | null>(null);
 
   // Cleanup
   useEffect(() => {
@@ -246,7 +246,7 @@ export default function InterpretScreen() {
         colors={[Colors.underTheMoonlight.moonlight, "#F8F8FF"]}
         style={styles.container}
       >
-        <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.safeArea, { paddingTop: insets.top }]}>
           <PanGestureHandler
             onHandlerStateChange={handleTabSwipe}
             minDist={50}
@@ -399,7 +399,7 @@ export default function InterpretScreen() {
               />
             </Animated.View>
           </PanGestureHandler>
-        </SafeAreaView>
+        </View>
       </LinearGradient>
     </GestureHandlerRootView>
   );

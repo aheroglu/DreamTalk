@@ -1,17 +1,46 @@
 import { useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/config/supabase';
+import type { Profile, ProfileInsert } from '@/types/database';
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Load user profile from database
+  const loadProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Profile load error:', error);
+        return null;
+      }
+
+      setProfile(data);
+      return data;
+    } catch (error) {
+      console.error('Profile load exception:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await loadProfile(session.user.id);
+      }
+      
       setLoading(false);
     });
 
@@ -21,6 +50,13 @@ export function useAuth() {
         console.log('Auth event:', event);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await loadProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
+        
         setLoading(false);
       }
     );
@@ -39,18 +75,28 @@ export function useAuth() {
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName,
+    try {
+      // Sign up user
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: displayName,
+          },
         },
-      },
-    });
-    
-    if (error) throw error;
-    return data;
+      });
+      
+      if (error) throw error;
+
+      // Profile will be created automatically by database trigger
+      // when user confirms email and signs in for the first time
+      
+      return data;
+    } catch (error) {
+      console.error('Sign up error:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
@@ -61,10 +107,12 @@ export function useAuth() {
   return {
     session,
     user,
+    profile,
     loading,
     signIn,
     signUp,
     signOut,
+    loadProfile,
     isAuthenticated: !!session,
   };
 }

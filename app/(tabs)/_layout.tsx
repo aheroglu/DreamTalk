@@ -233,17 +233,36 @@ export default function TabLayout() {
     }
   }, [getCurrentTab(), pulseAnim]);
 
-  // STEP 3: Navigation handlers with haptic feedback
+  // Modern animation refs for micro-interactions
+  const tabScaleAnim = useRef(new Animated.Value(1)).current;
+
+  // STEP 3: Navigation handlers with haptic feedback and modern animations
   const handleTabPress = (tabName: string) => {
-    // Haptic feedback
+    // Modern spring micro-interaction
+    Animated.sequence([
+      Animated.spring(tabScaleAnim, {
+        toValue: 0.95,
+        tension: 300,
+        friction: 10,
+        useNativeDriver: true,
+      }),
+      Animated.spring(tabScaleAnim, {
+        toValue: 1,
+        tension: 300,
+        friction: 7,
+        useNativeDriver: true,
+      })
+    ]).start();
+
+    // Enhanced haptic feedback
     if (Platform.OS === "ios") {
       if (tabName === "interpret") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // CTA feedback
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // Stronger CTA feedback
       } else {
-        Haptics.selectionAsync(); // Normal tab feedback
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Refined tab feedback
       }
     } else {
-      Vibration.vibrate(tabName === "interpret" ? 50 : 20);
+      Vibration.vibrate(tabName === "interpret" ? 80 : 30);
     }
 
     // Navigate to tab

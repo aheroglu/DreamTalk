@@ -48,11 +48,48 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/signin" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="index" 
+          options={{ 
+            headerShown: false,
+            animation: 'fade'
+          }} 
+        />
+        <Stack.Screen 
+          name="onboarding" 
+          options={{ 
+            headerShown: false,
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            animationDuration: 500,
+            gestureEnabled: true,
+            gestureDirection: 'vertical'
+          }} 
+        />
+        <Stack.Screen 
+          name="auth/signin" 
+          options={{ 
+            headerShown: false,
+            animation: 'fade',
+            animationDuration: 300
+          }} 
+        />
+        <Stack.Screen 
+          name="auth/signup" 
+          options={{ 
+            headerShown: false,
+            animation: 'fade',
+            animationDuration: 300
+          }} 
+        />
+        <Stack.Screen 
+          name="(tabs)" 
+          options={{ 
+            headerShown: false,
+            animation: 'fade',
+            animationDuration: 300
+          }} 
+        />
       </Stack>
     </ThemeProvider>
   );

@@ -5,7 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  SafeAreaView,
+
   Animated,
   Platform,
   Vibration,
@@ -220,7 +220,7 @@ export default function LibraryScreen() {
         ]}
         style={styles.container}
       >
-        <SafeAreaView style={styles.transparentContainer}>
+        <View style={[styles.transparentContainer, { paddingTop: insets.top }]}>
           <PanGestureHandler
             onHandlerStateChange={handleTabSwipe}
             minDist={50}
@@ -286,7 +286,7 @@ export default function LibraryScreen() {
               </ScrollView>
             </Animated.View>
           </PanGestureHandler>
-        </SafeAreaView>
+        </View>
       </LinearGradient>
     </GestureHandlerRootView>
   );
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    paddingTop: 20,
+    paddingTop: 10, // Reduced from 20 to 10
     paddingBottom: 24,
     backgroundColor: "transparent",
     alignItems: "center",

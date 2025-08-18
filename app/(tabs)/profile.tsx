@@ -3,7 +3,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
+
   Switch,
   Alert,
   Animated,
@@ -35,12 +35,14 @@ import {
   BarChart3,
 } from "lucide-react-native";
 import Colors from "@/constants/Colors";
+import { useAuth } from "@/hooks/useAuth";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 // Modern CSS Grid approach - Fixed, simple values
 const LAYOUT = {
   container: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 10, // Reduced from 20 to 10
   },
   spacing: {
     section: 24,
@@ -79,10 +81,9 @@ const profileData = {
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user, profile, isAuthenticated, signOut, loading } = useAuth();
+  const { resetOnboarding } = useOnboarding();
   const [settings, setSettings] = useState(profileData.settings);
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    profileData.isAuthenticated
-  );
 
   // Simple animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -133,13 +134,22 @@ export default function ProfileScreen() {
     );
   };
 
-  const handleSignOut = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
+  const handleSignOut = async () => {
+    Alert.alert("Oturum Kapat", "Oturumu kapatmak istediğinizden emin misiniz?", [
+      { text: "İptal", style: "cancel" },
       {
-        text: "Sign Out",
+        text: "Oturum Kapat",
         style: "destructive",
-        onPress: () => setIsAuthenticated(false),
+        onPress: async () => {
+          try {
+            await signOut();
+            // Navigate directly to auth (user has already seen onboarding)
+            router.replace("/auth/signin");
+          } catch (error) {
+            console.error("Sign out error:", error);
+            Alert.alert("Hata", "Oturum kapatılırken bir hata oluştu.");
+          }
+        },
       },
     ]);
   };
@@ -150,7 +160,7 @@ export default function ProfileScreen() {
         colors={[Colors.underTheMoonlight.moonlight, "#F8F8FF"]}
         style={styles.container}
       >
-        <SafeAreaView style={styles.safeArea}>
+        <View style={[styles.safeArea, { paddingTop: insets.top }]}>
           <PanGestureHandler
             onHandlerStateChange={handleTabSwipe}
             minDist={50}
@@ -187,12 +197,12 @@ export default function ProfileScreen() {
                   <View style={styles.profileInfo}>
                     <Text style={styles.profileName}>
                       {isAuthenticated
-                        ? profileData.user.name
+                        ? (profile?.display_name || user?.email?.split('@')[0] || "Dream Explorer")
                         : "Anonymous Dreamer"}
                     </Text>
                     <Text style={styles.profileStatus}>
                       {isAuthenticated
-                        ? profileData.user.email
+                        ? (user?.email || "Authenticated user")
                         : "Sign in to sync your dreams"}
                     </Text>
                   </View>
@@ -212,7 +222,7 @@ export default function ProfileScreen() {
                         color={Colors.underTheMoonlight.midnight}
                       />
                       <Text style={styles.statNumber}>
-                        {profileData.dreamStats.totalDreams}
+                        {profile?.dream_count || 0}
                       </Text>
                       <Text style={styles.statLabel}>Total Dreams</Text>
                     </View>
@@ -223,7 +233,7 @@ export default function ProfileScreen() {
                         color={Colors.underTheMoonlight.midnight}
                       />
                       <Text style={styles.statNumber}>
-                        {profileData.dreamStats.thisMonth}
+                        {0}
                       </Text>
                       <Text style={styles.statLabel}>This Month</Text>
                     </View>
@@ -328,23 +338,72 @@ export default function ProfileScreen() {
                       </View>
                       <ChevronRight size={20} color="#999" />
                     </TouchableOpacity>
+
+                    {/* Development only - Reset Onboarding */}
+                    {__DEV__ && (
+                      <TouchableOpacity
+                        style={styles.dataAction}
+                        onPress={() => {
+                          Alert.alert(
+                            "Reset Onboarding",
+                            "This will reset onboarding for testing purposes.",
+                            [
+                              { text: "Cancel", style: "cancel" },
+                              {
+                                text: "Reset",
+                                style: "destructive",
+                                onPress: async () => {
+                                  await resetOnboarding();
+                                  Alert.alert("Success", "Onboarding has been reset.");
+                                }
+                              }
+                            ]
+                          );
+                        }}
+                      >
+                        <View style={styles.settingLeft}>
+                          <Settings size={20} color="#FF9500" />
+                          <View style={styles.settingText}>
+                            <Text style={[styles.settingTitle, { color: "#FF9500" }]}>
+                              Reset Onboarding (Dev)
+                            </Text>
+                            <Text style={styles.settingSubtitle}>
+                              Test onboarding flow again
+                            </Text>
+                          </View>
+                        </View>
+                        <ChevronRight size={20} color="#999" />
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
 
-                <TouchableOpacity
-                  style={styles.signOutButton}
-                  onPress={handleSignOut}
-                >
-                  <LogOut size={20} color="#E53E3E" />
-                  <Text style={styles.signOutText}>Sign Out</Text>
-                </TouchableOpacity>
+                {isAuthenticated && (
+                  <TouchableOpacity
+                    style={styles.signOutButton}
+                    onPress={handleSignOut}
+                  >
+                    <LogOut size={20} color="#E53E3E" />
+                    <Text style={styles.signOutText}>Oturum Kapat</Text>
+                  </TouchableOpacity>
+                )}
+
+                {!isAuthenticated && (
+                  <TouchableOpacity
+                    style={[styles.signOutButton, { backgroundColor: Colors.underTheMoonlight.midnight }]}
+                    onPress={() => router.push("/auth/signin")}
+                  >
+                    <User size={20} color="#FFFFFF" />
+                    <Text style={[styles.signOutText, { color: "#FFFFFF" }]}>Oturum Aç</Text>
+                  </TouchableOpacity>
+                )}
 
                 {/* Bottom Spacer */}
                 <View style={[styles.bottomSpacer, { height: 100 + insets.bottom }]} />
               </ScrollView>
             </Animated.View>
           </PanGestureHandler>
-        </SafeAreaView>
+        </View>
       </LinearGradient>
     </GestureHandlerRootView>
   );
