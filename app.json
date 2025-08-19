@@ -29,7 +29,11 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-audio",
+      {
+        "microphonePermission": "Allow DreamTalk to access your microphone to record your dream."
+      }
     ],
     "experiments": {
       "typedRoutes": true

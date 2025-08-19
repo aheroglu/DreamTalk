@@ -35,7 +35,8 @@ export default {
       favicon: "./assets/images/favicon.png"
     },
     plugins: [
-      "expo-router"
+      "expo-router",
+      "expo-audio"
     ],
     experiments: {
       typedRoutes: true
