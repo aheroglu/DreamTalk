@@ -251,7 +251,7 @@ export default function TabLayout() {
         tension: 300,
         friction: 7,
         useNativeDriver: true,
-      })
+      }),
     ]).start();
 
     // Enhanced haptic feedback
@@ -289,16 +289,23 @@ export default function TabLayout() {
         </Tabs>
       </View>
 
-      <View style={[styles.customTabbarContainer, { bottom: Math.max(insets.bottom, 20) + 20 }]}>
+      <View
+        style={[
+          styles.customTabbarContainer,
+          { bottom: Math.max(insets.bottom, 20) + 20 },
+        ]}
+      >
         <TouchableOpacity
           style={styles.tabButton}
           onPress={() => handleTabPress("library")}
           activeOpacity={0.7}
         >
-          <View style={[
-            styles.iconContainer,
-            getCurrentTab() === "library" && styles.iconContainerFocused,
-          ]}>
+          <View
+            style={[
+              styles.iconContainer,
+              getCurrentTab() === "library" && styles.iconContainerFocused,
+            ]}
+          >
             <BookOpen
               size={STYLES.icon.size}
               color={
@@ -359,9 +366,13 @@ export default function TabLayout() {
                   styles.ctaIconContainerActive,
               ]}
             >
-              <Mic 
-                size={STYLES.cta.iconSize} 
-                color={getCurrentTab() === "interpret" ? Colors.underTheMoonlight.dusk : "#FFFFFF"}
+              <Mic
+                size={STYLES.cta.iconSize}
+                color={
+                  getCurrentTab() === "interpret"
+                    ? Colors.underTheMoonlight.dusk
+                    : "#FFFFFF"
+                }
                 strokeWidth={2.5}
               />
             </View>
@@ -373,10 +384,12 @@ export default function TabLayout() {
           onPress={() => handleTabPress("profile")}
           activeOpacity={0.7}
         >
-          <View style={[
-            styles.iconContainer,
-            getCurrentTab() === "profile" && styles.iconContainerFocused,
-          ]}>
+          <View
+            style={[
+              styles.iconContainer,
+              getCurrentTab() === "profile" && styles.iconContainerFocused,
+            ]}
+          >
             <User
               size={STYLES.icon.size}
               color={
@@ -413,7 +426,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
+    borderColor: "rgba(0,0,0,0.1)",
   },
   iconContainer: {
     alignItems: "center",
@@ -469,6 +482,7 @@ const styles = StyleSheet.create({
   },
 
   customTabbarContainer: {
+    zIndex: 100,
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-evenly",
@@ -484,7 +498,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: STYLES.tabBar.paddingHorizontal,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,

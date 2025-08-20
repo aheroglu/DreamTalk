@@ -71,11 +71,16 @@ export function useAudioRecording() {
       }
 
       console.log("Starting recording...");
-      console.log("AudioRecorder state:", audioRecorder);
+      console.log("AudioRecorder state before:", audioRecorder);
 
       // Prepare and start recording with useAudioRecorder
+      console.log("Preparing recording...");
       await audioRecorder.prepareToRecordAsync();
+      
+      console.log("Starting to record...");
       audioRecorder.record();
+      
+      console.log("AudioRecorder state after recording start:", audioRecorder);
 
       setIsRecording(true);
       setRecordingDuration(0);
@@ -96,9 +101,14 @@ export function useAudioRecording() {
   // Stop recording
   const stopRecording = async (): Promise<RecordingResult | null> => {
     try {
-      if (!audioRecorder.isRecording) {
-        throw new Error("No active recording");
+      // Remove the isRecording check - it's unreliable in expo-audio
+      // Check our own recording state instead
+      if (!isRecording) {
+        throw new Error("No active recording - not in recording state");
       }
+
+      console.log("Stopping audio recording...");
+      console.log("AudioRecorder state before stop:", audioRecorder);
 
       // Clear duration timer
       if (timerRef.current) {
@@ -106,7 +116,14 @@ export function useAudioRecording() {
         timerRef.current = null;
       }
 
-      const uri = await audioRecorder.stop();
+      // Stop the recording - this should work even if isRecording is false
+      const stopResult = await audioRecorder.stop();
+      console.log("Recording stopped, stop result:", stopResult);
+      console.log("AudioRecorder URI property:", audioRecorder.uri);
+
+      // Use the URI from the audioRecorder object if stop() didn't return one
+      const uri = stopResult || audioRecorder.uri;
+      console.log("Final URI to use:", uri);
 
       if (typeof uri === "undefined" || uri === null) {
         throw new Error("Recording URI not available");
@@ -145,9 +162,8 @@ export function useAudioRecording() {
   // Cancel recording
   const cancelRecording = async (): Promise<void> => {
     try {
-      if (audioRecorder.isRecording) {
-        await audioRecorder.stop();
-      }
+      // Always try to stop, regardless of isRecording state
+      await audioRecorder.stop();
     } catch (error) {
       console.error("Cancel recording failed:", error);
     } finally {

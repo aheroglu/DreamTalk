@@ -33,6 +33,7 @@ import Colors from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { useDreamInterpretation } from "@/hooks/useDreamInterpretation";
 import { useAudioPermissions } from "@/hooks/useAudioPermissions";
+import { useAudioRecording } from "@/hooks/useAudioRecording";
 
 // Get screen dimensions
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -80,8 +81,8 @@ export default function InterpretScreen() {
   // Glow animation for record button
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Timer and recording time state
-  const [recordingTime, setRecordingTime] = useState(0);
+  // Timer and recording time state (no longer needed - using audioRecording duration)
+  // const [recordingTime, setRecordingTime] = useState(0);
 
   // Dream interpretation hook
   const {
@@ -97,13 +98,29 @@ export default function InterpretScreen() {
   const { hasPermission, isRequesting, requestPermissions, resetPermissions } =
     useAudioPermissions();
 
+  // Audio recording hook
+  const {
+    isRecording: audioIsRecording,
+    recordingDuration,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    formatDuration: audioFormatDuration,
+  } = useAudioRecording();
+
   const [dreamText, setDreamText] = useState("");
   const [showTextInput, setShowTextInput] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
 
-  // Timer reference for recording
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Timer reference no longer needed - using audio recording hook duration
+
+  // Recorded audio state
+  const [recordedAudio, setRecordedAudio] = useState<string | null>(null);
+
+  // Modal states
+  const [showAudioModal, setShowAudioModal] = useState(false);
+  const [showInterpretationModal, setShowInterpretationModal] = useState(false);
 
   // Simple fade animation for the page
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -142,22 +159,14 @@ export default function InterpretScreen() {
 
       return () => {
         fadeAnim.setValue(0);
-        // Clear timer and reset states when leaving the page
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-        }
+        // Reset states when leaving the page
         setIsRecording(false);
-        setRecordingTime(0);
+        // Audio recording cleanup is handled by the hook
       };
     }, [fadeAnim])
   );
 
-  // Helper function to format time
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
+  // Helper function no longer needed - using audioFormatDuration from hook
 
   // Add gesture tracking state
   const [isGestureActive, setIsGestureActive] = useState(false);
@@ -189,20 +198,18 @@ export default function InterpretScreen() {
     }
 
     console.log("Permission granted, starting recording...");
-    setIsRecording(true);
-    setIsGestureActive(false);
 
-    // Clear any existing timer first
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    // Start actual audio recording
+    const recordingStarted = await startRecording();
+    if (!recordingStarted) {
+      console.log("Failed to start audio recording");
+      Alert.alert("Hata", "Ses kaydı başlatılamadı. Lütfen tekrar deneyin.");
+      return;
     }
 
-    // Start timer
-    setRecordingTime(0);
-    timerRef.current = setInterval(() => {
-      setRecordingTime((prev) => prev + 1);
-    }, 1000);
+    setIsRecording(true);
+    setIsGestureActive(false);
+    setRecordedAudio(null); // Clear any previous recording
 
     // Simple haptic feedback
     if (Platform.OS === "ios") {
@@ -228,16 +235,29 @@ export default function InterpretScreen() {
       return;
     }
 
-    stopRecording();
+    handleStopRecording();
   };
 
-  const stopRecording = () => {
-    console.log(`Recording stopped after ${recordingTime} seconds`);
+  const handleStopRecording = async () => {
+    console.log(`Recording stopped after ${recordingDuration} seconds`);
 
-    // Stop timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    try {
+      // Stop actual audio recording
+      const result = await stopRecording();
+
+      if (result && result.uri) {
+        setRecordedAudio(result.uri);
+        console.log("Audio recorded successfully:", result);
+
+        // Show audio modal instead of alert
+        setShowAudioModal(true);
+      } else {
+        console.log("Recording failed or no audio data");
+        Alert.alert("Hata", "Ses kaydı alınamadı. Lütfen tekrar deneyin.");
+      }
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      Alert.alert("Hata", "Ses kaydını durdururken bir hata oluştu.");
     }
 
     setIsRecording(false);
@@ -266,7 +286,7 @@ export default function InterpretScreen() {
 
   const handleStopLockedRecording = async () => {
     console.log("Stopping locked recording");
-    stopRecording();
+    await handleStopRecording();
   };
 
   const handlePanGesture = (event: any) => {
@@ -322,12 +342,8 @@ export default function InterpretScreen() {
         });
 
         if (result) {
-          // Success - the interpretation is now available in the hook
-          Alert.alert(
-            "Rüya Yorumu Hazır",
-            "Rüyanız başarıyla analiz edildi! Yorumu görmek için aşağıdaki sonuçları inceleyin.",
-            [{ text: "Tamam" }]
-          );
+          // Success - show interpretation modal
+          setShowInterpretationModal(true);
         } else {
           // Handle case where interpretation failed
           Alert.alert(
@@ -386,228 +402,406 @@ export default function InterpretScreen() {
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
               {/* Header Section */}
               <View style={styles.headerSection}>
-              <View style={styles.headerContent}>
-                <Sparkles size={28} color={Colors.underTheMoonlight.dusk} />
-                <Text style={styles.title}>DreamTalk</Text>
-                <Text style={styles.subtitle}>
-                  Share your dreams, discover their meanings
-                </Text>
+                <View style={styles.headerContent}>
+                  <Sparkles size={28} color={Colors.underTheMoonlight.dusk} />
+                  <Text style={styles.title}>DreamTalk</Text>
+                  <Text style={styles.subtitle}>
+                    Share your dreams, discover their meanings
+                  </Text>
+                </View>
+
+                {/* Text Input Section - Hidden during recording */}
+                {!isRecording && (
+                  <>
+                    {/* Text Input Toggle */}
+                    <TouchableOpacity
+                      style={[
+                        styles.toggleButton,
+                        showTextInput && styles.toggleButtonActive,
+                      ]}
+                      onPress={() => setShowTextInput(!showTextInput)}
+                    >
+                      <Type
+                        size={20}
+                        color={
+                          showTextInput
+                            ? "#FFFFFF"
+                            : Colors.underTheMoonlight.dusk
+                        }
+                      />
+                      <Text
+                        style={[
+                          styles.toggleText,
+                          showTextInput && styles.toggleTextActive,
+                        ]}
+                      >
+                        {showTextInput ? "Metni Gizle" : "Metin Yaz"}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Text Input */}
+                    {showTextInput && (
+                      <View style={styles.textInputContainer}>
+                        <TextInput
+                          style={styles.textInput}
+                          placeholder="Describe your dream here..."
+                          placeholderTextColor="#999"
+                          value={dreamText}
+                          onChangeText={setDreamText}
+                          multiline
+                          numberOfLines={4}
+                          textAlignVertical="top"
+                        />
+                        <TouchableOpacity
+                          style={[
+                            styles.sendButton,
+                            (!dreamText.trim() ||
+                              isProcessing ||
+                              isInterpreting) &&
+                              styles.sendButtonDisabled,
+                          ]}
+                          onPress={handleSendText}
+                          disabled={
+                            !dreamText.trim() || isProcessing || isInterpreting
+                          }
+                        >
+                          {isProcessing || isInterpreting ? (
+                            <Loader size={20} color="#FFFFFF" />
+                          ) : (
+                            <Send size={20} color="#FFFFFF" />
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </>
+                )}
               </View>
 
-              {/* Text Input Section - Hidden during recording */}
-              {!isRecording && (
-                <>
-                  {/* Text Input Toggle */}
-                  <TouchableOpacity
-                    style={[
-                      styles.toggleButton,
-                      showTextInput && styles.toggleButtonActive,
-                    ]}
-                    onPress={() => setShowTextInput(!showTextInput)}
-                  >
-                    <Type
-                      size={20}
-                      color={
-                        showTextInput
-                          ? "#FFFFFF"
-                          : Colors.underTheMoonlight.dusk
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        showTextInput && styles.toggleTextActive,
-                      ]}
-                    >
-                      {showTextInput ? "Metni Gizle" : "Metin Yaz"}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {/* Text Input */}
-                  {showTextInput && (
-                    <View style={styles.textInputContainer}>
-                      <TextInput
-                        style={styles.textInput}
-                        placeholder="Describe your dream here..."
-                        placeholderTextColor="#999"
-                        value={dreamText}
-                        onChangeText={setDreamText}
-                        multiline
-                        numberOfLines={4}
-                        textAlignVertical="top"
-                      />
-                      <TouchableOpacity
-                        style={[
-                          styles.sendButton,
-                          (!dreamText.trim() ||
-                            isProcessing ||
-                            isInterpreting) &&
-                            styles.sendButtonDisabled,
-                        ]}
-                        onPress={handleSendText}
-                        disabled={
-                          !dreamText.trim() || isProcessing || isInterpreting
-                        }
-                      >
-                        {isProcessing || isInterpreting ? (
-                          <Loader size={20} color="#FFFFFF" />
-                        ) : (
-                          <Send size={20} color="#FFFFFF" />
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                </>
-              )}
-            </View>
-
-            {/* Center Record Section - Hidden when text input is active */}
-            {!showTextInput && (
-              <View style={styles.recordSection}>
-                {/* Record Button with Glow Effect */}
-                <View style={styles.recordButtonContainer}>
-                  {/* Glow Effect Layers */}
-                  <Animated.View
-                    style={[
-                      styles.glowOuter,
-                      {
-                        backgroundColor: Colors.underTheMoonlight.midnight,
-                        transform: [{ scale: pulseAnim }],
-                      },
-                    ]}
-                  />
-                  <Animated.View
-                    style={[
-                      styles.glowMiddle,
-                      {
-                        backgroundColor: Colors.underTheMoonlight.midnight,
-                        transform: [{ scale: pulseAnim }],
-                      },
-                    ]}
-                  />
-                  <Animated.View
-                    style={[
-                      styles.glowInner,
-                      {
-                        backgroundColor: Colors.underTheMoonlight.midnight,
-                        transform: [{ scale: pulseAnim }],
-                      },
-                    ]}
-                  />
-
-                  {/* Lock Indicator */}
-                  {isRecording && !isLocked && (
+              {/* Center Record Section - Hidden when text input is active */}
+              {!showTextInput && (
+                <View style={styles.recordSection}>
+                  {/* Record Button with Glow Effect */}
+                  <View style={styles.recordButtonContainer}>
+                    {/* Glow Effect Layers */}
                     <Animated.View
                       style={[
-                        styles.lockIndicator,
+                        styles.glowOuter,
                         {
-                          opacity: 0.7 + slideProgress * 0.3,
-                          transform: [{ scale: 0.9 + slideProgress * 0.1 }],
+                          backgroundColor: Colors.underTheMoonlight.midnight,
+                          transform: [{ scale: pulseAnim }],
                         },
                       ]}
-                    >
-                      <ArrowUp
-                        size={20}
-                        color={Colors.underTheMoonlight.dusk}
-                      />
-                      <Text style={styles.lockText}>Slide up to lock</Text>
-                      {slideProgress > 0 && (
-                        <View
-                          style={[
-                            styles.progressBar,
-                            { width: `${slideProgress * 100}%` },
-                          ]}
-                        />
-                      )}
-                    </Animated.View>
-                  )}
-
-                  <PanGestureHandler
-                    minDist={5}
-                    onGestureEvent={handlePanGesture}
-                    onHandlerStateChange={handlePanStateChange}
-                    enabled={true}
-                    shouldCancelWhenOutside={false}
-                  >
-                    <TouchableOpacity
+                    />
+                    <Animated.View
                       style={[
-                        styles.recordButton,
-                        isRecording && styles.recordButtonActive,
+                        styles.glowMiddle,
+                        {
+                          backgroundColor: Colors.underTheMoonlight.midnight,
+                          transform: [{ scale: pulseAnim }],
+                        },
                       ]}
-                      onPressIn={handleRecordStart}
-                      onPressOut={
-                        !isGestureActive && isRecording && !isLocked
-                          ? handleRecordEnd
-                          : undefined
-                      }
-                      activeOpacity={0.9}
-                      disabled={isLocked}
-                    >
-                      <LinearGradient
-                        colors={[
-                          Colors.underTheMoonlight.midnight,
-                          Colors.underTheMoonlight.dusk,
+                    />
+                    <Animated.View
+                      style={[
+                        styles.glowInner,
+                        {
+                          backgroundColor: Colors.underTheMoonlight.midnight,
+                          transform: [{ scale: pulseAnim }],
+                        },
+                      ]}
+                    />
+
+                    {/* Lock Indicator */}
+                    {isRecording && !isLocked && (
+                      <Animated.View
+                        style={[
+                          styles.lockIndicator,
+                          {
+                            opacity: 0.7 + slideProgress * 0.3,
+                            transform: [{ scale: 0.9 + slideProgress * 0.1 }],
+                          },
                         ]}
-                        style={styles.recordButtonGradient}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
                       >
-                        <Mic
-                          size={LAYOUT.recordButton.iconSize}
-                          color="#FFFFFF"
-                          strokeWidth={2}
+                        <ArrowUp
+                          size={20}
+                          color={Colors.underTheMoonlight.dusk}
                         />
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </PanGestureHandler>
-
-                  {/* Stop Button for Locked Recording */}
-                  {isLocked && (
-                    <TouchableOpacity
-                      style={styles.stopButton}
-                      onPress={handleStopLockedRecording}
-                    >
-                      <MicOff
-                        size={24}
-                        color={Colors.underTheMoonlight.midnight}
-                      />
-                    </TouchableOpacity>
-                  )}
-
-                  {/* Recording Status with Timer */}
-                  {isRecording && (
-                    <View style={styles.recordingStatusContainer}>
-                      <View style={styles.recordingStatus}>
-                        <View style={styles.recordingDot} />
-                        <Text style={styles.recordingTime}>
-                          {formatTime(recordingTime)}
-                        </Text>
-                        {isLocked && (
-                          <View style={styles.lockedIndicator}>
-                            <Lock
-                              size={16}
-                              color={Colors.underTheMoonlight.dusk}
-                            />
-                            <Text style={styles.lockedText}>Locked</Text>
-                          </View>
+                        <Text style={styles.lockText}>Slide up to lock</Text>
+                        {slideProgress > 0 && (
+                          <View
+                            style={[
+                              styles.progressBar,
+                              { width: `${slideProgress * 100}%` },
+                            ]}
+                          />
                         )}
+                      </Animated.View>
+                    )}
+
+                    <PanGestureHandler
+                      minDist={5}
+                      onGestureEvent={handlePanGesture}
+                      onHandlerStateChange={handlePanStateChange}
+                      enabled={true}
+                      shouldCancelWhenOutside={false}
+                    >
+                      <TouchableOpacity
+                        style={[
+                          styles.recordButton,
+                          isRecording && styles.recordButtonActive,
+                        ]}
+                        onPressIn={handleRecordStart}
+                        onPressOut={
+                          !isGestureActive && isRecording && !isLocked
+                            ? handleRecordEnd
+                            : undefined
+                        }
+                        activeOpacity={0.9}
+                        disabled={isLocked}
+                      >
+                        <LinearGradient
+                          colors={[
+                            Colors.underTheMoonlight.midnight,
+                            Colors.underTheMoonlight.dusk,
+                          ]}
+                          style={styles.recordButtonGradient}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                        >
+                          <Mic
+                            size={LAYOUT.recordButton.iconSize}
+                            color="#FFFFFF"
+                            strokeWidth={2}
+                          />
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    </PanGestureHandler>
+
+                    {/* Stop Button for Locked Recording */}
+                    {isLocked && (
+                      <TouchableOpacity
+                        style={styles.stopButton}
+                        onPress={handleStopLockedRecording}
+                      >
+                        <MicOff
+                          size={24}
+                          color={Colors.underTheMoonlight.midnight}
+                        />
+                      </TouchableOpacity>
+                    )}
+
+                    {/* Recording Status with Timer */}
+                    {isRecording && (
+                      <View style={styles.recordingStatusContainer}>
+                        <View style={styles.recordingStatus}>
+                          <View style={styles.recordingDot} />
+                          <Text style={styles.recordingTime}>
+                            {audioFormatDuration(recordingDuration)}
+                          </Text>
+                          {isLocked && (
+                            <View style={styles.lockedIndicator}>
+                              <Lock
+                                size={16}
+                                color={Colors.underTheMoonlight.dusk}
+                              />
+                              <Text style={styles.lockedText}>Locked</Text>
+                            </View>
+                          )}
+                        </View>
                       </View>
-                    </View>
-                  )}
+                    )}
+                  </View>
                 </View>
+              )}
+
+              {/* Content sections removed - using modals instead */}
+              {false && (
+                <View style={styles.audioSection}>
+                  <View style={styles.audioCard}>
+                    <Text style={styles.audioTitle}>Ses Kaydınız Hazır</Text>
+                    <Text style={styles.audioDescription}>
+                      Rüya yorumunuzu almak için ses kaydınızı işleme
+                      alabilirsiniz.
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.processAudioButton}
+                      onPress={() => {
+                        // TODO: Process audio for dream interpretation
+                        Alert.alert(
+                          "Yakında",
+                          "Ses dosyası işleme özelliği yakında eklenecek. Şimdilik metin ile rüya anlatımını kullanabilirsiniz."
+                        );
+                      }}
+                    >
+                      <Sparkles size={20} color="#FFFFFF" />
+                      <Text style={styles.processAudioButtonText}>
+                        Rüya Yorumunu Al
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.clearAudioButton}
+                      onPress={() => setRecordedAudio(null)}
+                    >
+                      <Text style={styles.clearAudioButtonText}>
+                        Yeni Kayıt Yap
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              {/* Dream Interpretation Results - moved to modal */}
+              {false && (
+                <View style={styles.interpretationSection}>
+                  <View style={styles.interpretationHeader}>
+                    <Sparkles size={24} color={Colors.underTheMoonlight.dusk} />
+                    <Text style={styles.interpretationTitle}>
+                      Rüya Yorumunuz
+                    </Text>
+                  </View>
+
+                  {/* Summary */}
+                  <View style={styles.summaryCard}>
+                    <Text style={styles.summaryTitle}>Özet</Text>
+                    <Text style={styles.summaryText}>
+                      {interpretation.summary}
+                    </Text>
+                  </View>
+
+                  {/* Detailed Interpretation */}
+                  <View style={styles.interpretationCard}>
+                    <Text style={styles.cardTitle}>Detaylı Yorum</Text>
+                    <Text style={styles.interpretationText}>
+                      {interpretation.interpretation}
+                    </Text>
+                  </View>
+
+                  {/* Symbols */}
+                  {interpretation.symbols &&
+                    interpretation.symbols.length > 0 && (
+                      <View style={styles.symbolsCard}>
+                        <Text style={styles.cardTitle}>Semboller</Text>
+                        {interpretation.symbols.map((symbol, index) => (
+                          <View key={index} style={styles.symbolItem}>
+                            <Text style={styles.symbolName}>
+                              {symbol.symbol}
+                            </Text>
+                            <Text style={styles.symbolMeaning}>
+                              {symbol.meaning}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+
+                  {/* Clear Button */}
+                  <TouchableOpacity
+                    style={styles.clearButton}
+                    onPress={clearInterpretation}
+                  >
+                    <Text style={styles.clearButtonText}>
+                      Yeni Rüya Analizi
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Error Display - keeping for now */}
+              {interpretationError && !interpretation && (
+                <View style={styles.errorSection}>
+                  <View style={styles.errorCard}>
+                    <Text style={styles.errorTitle}>Hata</Text>
+                    <Text style={styles.errorText}>{interpretationError}</Text>
+                    <TouchableOpacity
+                      style={styles.retryButton}
+                      onPress={clearError}
+                    >
+                      <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              {/* Bottom Spacer */}
+              <View
+                style={[styles.bottomSpacer, { height: 100 + insets.bottom }]}
+              />
+            </Animated.View>
+          </PanGestureHandler>
+        </View>
+      </LinearGradient>
+
+      {/* Audio Modal */}
+      {showAudioModal && (
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowAudioModal(false)}
+          />
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Sparkles size={28} color={Colors.underTheMoonlight.dusk} />
+              <Text style={styles.modalTitle}>Ses Kaydınız Hazır</Text>
+              <Text style={styles.modalDescription}>
+                Rüya yorumunuzu almak için ses kaydınızı işleme alabilirsiniz.
+              </Text>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.primaryModalButton}
+                  onPress={() => {
+                    setShowAudioModal(false);
+                    // TODO: Process audio for dream interpretation
+                    Alert.alert(
+                      "Yakında",
+                      "Ses dosyası işleme özelliği yakında eklenecek. Şimdilik metin ile rüya anlatımını kullanabilirsiniz."
+                    );
+                  }}
+                >
+                  <Sparkles size={20} color="#FFFFFF" />
+                  <Text style={styles.primaryModalButtonText}>
+                    Rüya Yorumunu Al
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryModalButton}
+                  onPress={() => {
+                    setShowAudioModal(false);
+                    setRecordedAudio(null);
+                  }}
+                >
+                  <Text style={styles.secondaryModalButtonText}>
+                    Yeni Kayıt Yap
+                  </Text>
+                </TouchableOpacity>
               </View>
-            )}
+            </View>
+          </View>
+        </View>
+      )}
 
-            {/* Dream Interpretation Results */}
-            {interpretation && (
-              <View style={styles.interpretationSection}>
-                <View style={styles.interpretationHeader}>
-                  <Sparkles size={24} color={Colors.underTheMoonlight.dusk} />
-                  <Text style={styles.interpretationTitle}>Rüya Yorumunuz</Text>
-                </View>
+      {/* Interpretation Modal */}
+      {showInterpretationModal && interpretation && (
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowInterpretationModal(false)}
+          />
+          <View style={styles.modalContainer}>
+            <View
+              style={[styles.modalContent, styles.interpretationModalContent]}
+            >
+              <View style={styles.modalHeader}>
+                <Sparkles size={24} color={Colors.underTheMoonlight.dusk} />
+                <Text style={styles.modalTitle}>Rüya Yorumunuz</Text>
+              </View>
 
+              <View style={styles.interpretationScrollContent}>
                 {/* Summary */}
-                <View style={styles.summaryCard}>
+                <View style={styles.summarySection}>
                   <Text style={styles.summaryTitle}>Özet</Text>
                   <Text style={styles.summaryText}>
                     {interpretation.summary}
@@ -615,8 +809,8 @@ export default function InterpretScreen() {
                 </View>
 
                 {/* Detailed Interpretation */}
-                <View style={styles.interpretationCard}>
-                  <Text style={styles.cardTitle}>Detaylı Yorum</Text>
+                <View style={styles.interpretationSection}>
+                  <Text style={styles.sectionTitle}>Detaylı Yorum</Text>
                   <Text style={styles.interpretationText}>
                     {interpretation.interpretation}
                   </Text>
@@ -625,8 +819,8 @@ export default function InterpretScreen() {
                 {/* Symbols */}
                 {interpretation.symbols &&
                   interpretation.symbols.length > 0 && (
-                    <View style={styles.symbolsCard}>
-                      <Text style={styles.cardTitle}>Semboller</Text>
+                    <View style={styles.symbolsSection}>
+                      <Text style={styles.sectionTitle}>Semboller</Text>
                       {interpretation.symbols.map((symbol, index) => (
                         <View key={index} style={styles.symbolItem}>
                           <Text style={styles.symbolName}>{symbol.symbol}</Text>
@@ -637,41 +831,32 @@ export default function InterpretScreen() {
                       ))}
                     </View>
                   )}
+              </View>
 
-                {/* Clear Button */}
+              <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={styles.clearButton}
-                  onPress={clearInterpretation}
+                  style={styles.primaryModalButton}
+                  onPress={() => {
+                    setShowInterpretationModal(false);
+                    clearInterpretation();
+                  }}
                 >
-                  <Text style={styles.clearButtonText}>Yeni Rüya Analizi</Text>
+                  <Text style={styles.primaryModalButtonText}>
+                    Yeni Rüya Analizi
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.secondaryModalButton}
+                  onPress={() => setShowInterpretationModal(false)}
+                >
+                  <Text style={styles.secondaryModalButtonText}>Kapat</Text>
                 </TouchableOpacity>
               </View>
-            )}
-
-            {/* Error Display */}
-            {interpretationError && !interpretation && (
-              <View style={styles.errorSection}>
-                <View style={styles.errorCard}>
-                  <Text style={styles.errorTitle}>Hata</Text>
-                  <Text style={styles.errorText}>{interpretationError}</Text>
-                  <TouchableOpacity
-                    style={styles.retryButton}
-                    onPress={clearError}
-                  >
-                    <Text style={styles.retryButtonText}>Tekrar Dene</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-              {/* Bottom Spacer */}
-              <View
-                style={[styles.bottomSpacer, { height: 100 + insets.bottom }]}
-              />
-            </Animated.View>
-          </PanGestureHandler>
+            </View>
+          </View>
         </View>
-      </LinearGradient>
+      )}
     </GestureHandlerRootView>
   );
 }
@@ -692,6 +877,7 @@ const styles = StyleSheet.create({
   headerSection: {
     gap: LAYOUT.spacing.element,
     paddingHorizontal: LAYOUT.container.paddingHorizontal,
+    backgroundColor: "transparent",
     paddingTop: LAYOUT.container.paddingTop,
   },
   headerContent: {
@@ -911,12 +1097,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "transparent",
     gap: LAYOUT.spacing.element,
     paddingHorizontal: LAYOUT.container.paddingHorizontal,
   },
   lockIndicator: {
     position: "absolute",
-    top: -90,
+    top: -100,
     alignItems: "center",
     gap: 4,
     backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -935,6 +1122,7 @@ const styles = StyleSheet.create({
   },
   recordButtonContainer: {
     marginVertical: 32,
+    backgroundColor: "transparent",
     alignItems: "center",
     position: "relative",
     paddingBottom: 60, // Space for recording status below
@@ -1015,8 +1203,9 @@ const styles = StyleSheet.create({
   },
   recordingStatusContainer: {
     position: "absolute",
-    top: LAYOUT.recordButton.size + 20, // Full button height + 20px gap
+    top: LAYOUT.recordButton.size + 50, // Full button height + 20px gap
     width: "100%",
+    backgroundColor: "transparent",
     alignItems: "center",
     zIndex: 10,
   },
@@ -1076,8 +1265,188 @@ const styles = StyleSheet.create({
     borderRadius: 1.5,
   },
 
+  // Audio Section Styles
+  audioSection: {
+    paddingHorizontal: LAYOUT.container.paddingHorizontal,
+    marginTop: LAYOUT.spacing.section,
+    backgroundColor: "transparent",
+  },
+  audioCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+    alignItems: "center",
+    gap: 16,
+  },
+  audioTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: Colors.underTheMoonlight.midnight,
+    textAlign: "center",
+  },
+  audioDescription: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  processAudioButton: {
+    backgroundColor: Colors.underTheMoonlight.midnight,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    shadowColor: Colors.underTheMoonlight.midnight,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  processAudioButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  clearAudioButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  clearAudioButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#666",
+  },
+
   // Bottom Spacer - CSS Grid: Fixed height for tabbar
   bottomSpacer: {
+    backgroundColor: "transparent",
     height: 100,
+  },
+
+  // Modal Styles
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  modalBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  modalContainer: {
+    width: "90%",
+    maxWidth: 400,
+    maxHeight: "80%",
+    backgroundColor: "transparent",
+    borderRadius: 20,
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  interpretationModalContent: {
+    maxHeight: "80%",
+    alignItems: "stretch",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 16,
+    alignSelf: "center",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: Colors.underTheMoonlight.midnight,
+    textAlign: "center",
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  modalDescription: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  modalButtons: {
+    width: "100%",
+    backgroundColor: "transparent",
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  primaryModalButton: {
+    backgroundColor: Colors.underTheMoonlight.midnight,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    shadowColor: Colors.underTheMoonlight.midnight,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  primaryModalButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  secondaryModalButton: {
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  secondaryModalButtonText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#666",
+  },
+
+  // Interpretation Modal Content
+  interpretationScrollContent: {
+    flex: 1,
+    width: "100%",
+  },
+  summarySection: {
+    marginBottom: 20,
+  },
+  symbolsSection: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: Colors.underTheMoonlight.midnight,
+    marginBottom: 12,
   },
 });

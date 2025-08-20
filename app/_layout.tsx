@@ -1,26 +1,29 @@
-import 'react-native-url-polyfill/auto';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import "react-native-url-polyfill/auto";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import "react-native-reanimated";
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme } from "@/components/useColorScheme";
 
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
-} from 'expo-router';
-
+} from "expo-router";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
   });
 
@@ -46,49 +49,49 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen 
-          name="index" 
-          options={{ 
+        <Stack.Screen
+          name="index"
+          options={{
             headerShown: false,
-            animation: 'fade'
-          }} 
+            animation: "fade",
+          }}
         />
-        <Stack.Screen 
-          name="onboarding" 
-          options={{ 
+        <Stack.Screen
+          name="onboarding"
+          options={{
             headerShown: false,
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
+            presentation: "modal",
+            animation: "slide_from_bottom",
             animationDuration: 500,
             gestureEnabled: true,
-            gestureDirection: 'vertical'
-          }} 
+            gestureDirection: "vertical",
+          }}
         />
-        <Stack.Screen 
-          name="auth/signin" 
-          options={{ 
+        <Stack.Screen
+          name="auth/signin"
+          options={{
             headerShown: false,
-            animation: 'fade',
-            animationDuration: 300
-          }} 
+            animation: "fade",
+            animationDuration: 300,
+          }}
         />
-        <Stack.Screen 
-          name="auth/signup" 
-          options={{ 
+        <Stack.Screen
+          name="auth/signup"
+          options={{
             headerShown: false,
-            animation: 'fade',
-            animationDuration: 300
-          }} 
+            animation: "fade",
+            animationDuration: 300,
+          }}
         />
-        <Stack.Screen 
-          name="(tabs)" 
-          options={{ 
+        <Stack.Screen
+          name="(tabs)"
+          options={{
             headerShown: false,
-            animation: 'fade',
-            animationDuration: 300
-          }} 
+            animation: "fade",
+            animationDuration: 300,
+          }}
         />
       </Stack>
     </ThemeProvider>

@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-
   Animated,
   Platform,
   Vibration,
@@ -272,7 +271,12 @@ export default function LibraryScreen() {
                 </ScrollView>
 
                 {/* Dream Cards */}
-                <View style={[styles.cardsContainer, { paddingBottom: 120 + insets.bottom }]}>
+                <View
+                  style={[
+                    styles.cardsContainer,
+                    { paddingBottom: 120 + insets.bottom },
+                  ]}
+                >
                   <FlatList
                     data={filteredSymbols}
                     renderItem={renderDreamCard}
